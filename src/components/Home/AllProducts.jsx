@@ -1,32 +1,36 @@
-"use cache";
+async function getProducts() {
+    "use cache";
+
+    const res = await fetch(
+        "https://api.api-store.workers.dev/api/bazardor/products"
+    );
+
+    if (!res.ok) {
+        console.log("Products API error:", await res.text());
+        return null;
+    }
+
+    const contentType = res.headers.get("content-type");
+
+    if (!contentType?.includes("application/json")) {
+        console.log("Products API returned HTML instead of JSON");
+        console.log(await res.text());
+        return null;
+    }
+
+    return res.json();
+}
 
 const AllProducts = async () => {
-   const res = await fetch(
-    "https://api.api-store.workers.dev/api/bazardor/products",
-    {
-        cache: "no-store",
+    const allProducts = await getProducts();
+
+    if (!allProducts) {
+        return null;
     }
-);
-
-if (!res.ok) {
-    console.log("Products API error:", await res.text());
-    return null;
-}
-
-const contentType = res.headers.get("content-type");
-
-if (!contentType?.includes("application/json")) {
-    console.log("Products API returned HTML instead of JSON");
-    console.log(await res.text());
-    return null;
-}
-
-const allProducts = await res.json();
 
     return (
         <section className="px-5 py-10 max-w-7xl mx-auto">
-            
-            {/* Heading */}
+
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">
                     সব পণ্য
@@ -37,7 +41,6 @@ const allProducts = await res.json();
                 </p>
             </div>
 
-            {/* Product Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                 {allProducts.map((product) => (
@@ -45,10 +48,8 @@ const allProducts = await res.json();
                         key={product.id}
                         className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
                     >
-                        {/* Top */}
                         <div className="flex items-center gap-3">
 
-                            {/* Image Placeholder */}
                             <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
                                 <div className="w-5 h-5 bg-gray-800"></div>
                             </div>
@@ -64,29 +65,33 @@ const allProducts = await res.json();
                             </div>
                         </div>
 
-                        {/* Price */}
                         <div className="mt-5">
                             <p className="text-xs text-gray-500">
                                 আজকের বাজার
                             </p>
 
                             <div className="flex items-center justify-between mt-1">
+
                                 <p className="text-lg font-bold text-gray-800">
                                     {product.today} টাকা
                                 </p>
 
-                                {/* Price Change */}
-                               
-                            <span
-                                className={
-                                    product.change.dir === "up"
-                                        ? "text-red-500"
-                                        : "text-green-500"
-                                }
-                            >
-                                {product.change.dir === "up" ? "▲" : "▼"}{" "}
-                                {Number(product.change.pct).toLocaleString("bn-BD")}%
-                            </span>
+                                <span
+                                    className={
+                                        product.change.dir === "up"
+                                            ? "text-red-500"
+                                            : "text-green-500"
+                                    }
+                                >
+                                    {product.change.dir === "up"
+                                        ? "▲"
+                                        : "▼"}{" "}
+                                    {Number(
+                                        product.change.pct
+                                    ).toLocaleString("bn-BD")}
+                                    %
+                                </span>
+
                             </div>
                         </div>
                     </div>

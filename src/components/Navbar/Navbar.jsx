@@ -10,7 +10,6 @@ const Navbar = async () => {
   });
 
   return (
-
     <header>
       <nav className="flex justify-between items-center container mx-auto">
         <div className="flex">
@@ -20,17 +19,20 @@ const Navbar = async () => {
             width={50}
             height={50}
           />
+
           <div>
             <h1>বাজার দর</h1>
             <p>{date}</p>
           </div>
         </div>
+
         <div className="flex gap-2">
           <div className="btn">সাইন ইন</div>
           <div className="btn">সাইন আপ</div>
         </div>
       </nav>
-      <NavLinks></NavLinks>
+
+      <NavLinks />
     </header>
   );
 };
