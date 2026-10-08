@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 
 const NavLinks = async () => {
@@ -8,33 +9,34 @@ const NavLinks = async () => {
         }
     );
 
-    console.log("Categories status:", res.status);
-    console.log("Categories content-type:", res.headers.get("content-type"));
-
     if (!res.ok) {
-        const errorText = await res.text();
-        console.log("Categories API response:", errorText);
+        console.log("Categories API error:", await res.text());
+        return null;
+    }
 
+    const contentType = res.headers.get("content-type");
+
+    if (!contentType?.includes("application/json")) {
+        console.log("Categories API returned HTML:");
+        console.log(await res.text());
         return null;
     }
 
     const navCategories = await res.json();
 
     return (
-        <div className="border-t border-gray-100">
-            <div className="container mx-auto flex justify-center gap-4 px-4 py-3">
-                {navCategories.map((c) => (
-                    <Link
-                        key={c.id}
-                        href={`/${c.slug}`}
-                        className="text-sm font-medium text-gray-700 hover:text-green-600"
-                    >
-                        {c.nameBn}
-                    </Link>
-                ))}
-            </div>
+        <div className="flex items-center gap-4">
+            {navCategories.map((category) => (
+                <Link
+                    key={category.id}
+                    href={`/category/${category.slug}`}
+                >
+                    {category.nameBn}
+                </Link>
+            ))}
         </div>
     );
 };
 
 export default NavLinks;
+

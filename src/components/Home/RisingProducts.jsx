@@ -4,8 +4,24 @@ import React from "react";
 
 const RisingProducts = async () => {
     const res = await fetch(
-        "https://api.api-store.workers.dev/api/bazardor/products"
+        "https://api.api-store.workers.dev/api/bazardor/products",
+        {
+            cache: "no-store",
+        }
     );
+
+    if (!res.ok) {
+        console.log("Products API error:", await res.text());
+        return null;
+    }
+
+    const contentType = res.headers.get("content-type");
+
+    if (!contentType?.includes("application/json")) {
+        console.log("Products API returned HTML instead of JSON");
+        console.log(await res.text());
+        return null;
+    }
 
     const allProducts = await res.json();
 
@@ -22,7 +38,7 @@ const RisingProducts = async () => {
 
     return (
         <section className="px-5 py-10 max-w-7xl mx-auto">
-            
+
             {/* Heading */}
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">
@@ -73,17 +89,17 @@ const RisingProducts = async () => {
                                 </p>
 
                                 {/* Price Change */}
-                               
-                            <span
-                                className={
-                                    product.change.dir === "up"
-                                        ? "text-red-500"
-                                        : "text-green-500"
-                                }
-                            >
-                                {product.change.dir === "up" ? "▲" : "▼"}{" "}
-                                {Number(product.change.pct).toLocaleString("bn-BD")}%
-                            </span>
+
+                                <span
+                                    className={
+                                        product.change.dir === "up"
+                                            ? "text-red-500"
+                                            : "text-green-500"
+                                    }
+                                >
+                                    {product.change.dir === "up" ? "▲" : "▼"}{" "}
+                                    {Number(product.change.pct).toLocaleString("bn-BD")}%
+                                </span>
                             </div>
                         </div>
                     </div>

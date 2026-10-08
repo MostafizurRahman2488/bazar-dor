@@ -13,7 +13,7 @@ export const metadata = {
   description: "বাংলাদেশের দৈনিক বাজার দর",
 };
 
-export const instant = false;
+// export const instant = false;
 
 export default function RootLayout({ children }) {
   return (

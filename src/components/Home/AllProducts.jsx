@@ -1,12 +1,27 @@
 "use cache";
 
 const AllProducts = async () => {
-    const res = await fetch(
-        "https://api.api-store.workers.dev/api/bazardor/products"
-    );
+   const res = await fetch(
+    "https://api.api-store.workers.dev/api/bazardor/products",
+    {
+        cache: "no-store",
+    }
+);
 
-    const allProducts = await res.json();
-   
+if (!res.ok) {
+    console.log("Products API error:", await res.text());
+    return null;
+}
+
+const contentType = res.headers.get("content-type");
+
+if (!contentType?.includes("application/json")) {
+    console.log("Products API returned HTML instead of JSON");
+    console.log(await res.text());
+    return null;
+}
+
+const allProducts = await res.json();
 
     return (
         <section className="px-5 py-10 max-w-7xl mx-auto">
