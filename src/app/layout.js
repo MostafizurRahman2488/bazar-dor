@@ -1,9 +1,10 @@
-import { Hind_Siliguri } from "next/font/google";
+import { Noto_Sans_Bengali } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/Navbar/Navbar";
+import PriceTicker from "@/components/Ticker/PriceTicker";
 
-const hindSiliguri = Hind_Siliguri({
-  subsets: ["latin", "bengali"],
+const notoSansBengali = Noto_Sans_Bengali({
+  subsets: ["bengali"],
   weight: ["400", "500", "600", "700"],
 });
 
@@ -12,19 +13,19 @@ export const metadata = {
   description: "বাংলাদেশের দৈনিক বাজার দর",
 };
 
+export const instant = false;
+
 export default function RootLayout({ children }) {
   return (
     <html
       lang="bn"
       data-theme="light"
-      className={`${hindSiliguri.className} h-full antialiased`}
+      className={`${notoSansBengali.className} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Navbar></Navbar>
-
+        <Navbar />
+        <PriceTicker />
         {children}
-
-        {/* <h1>Footer</h1> */}
       </body>
     </html>
   );
