@@ -1,20 +1,34 @@
 import Link from "next/link";
-import React from "react";
 
 const NavLinks = async () => {
     const res = await fetch(
-        "https://api.api-store.workers.dev/api/bazardor/categories"
+        "https://api.api-store.workers.dev/api/bazardor/categories",
+        {
+            cache: "no-store",
+        }
     );
 
-    const data = await res.json();
+    console.log("Categories status:", res.status);
+    console.log("Categories content-type:", res.headers.get("content-type"));
 
-    const navCategories = data;
+    if (!res.ok) {
+        const errorText = await res.text();
+        console.log("Categories API response:", errorText);
+
+        return null;
+    }
+
+    const navCategories = await res.json();
 
     return (
-        <div>
-            <div className="flex justify-center gap-4 container mx-auto">
+        <div className="border-t border-gray-100">
+            <div className="container mx-auto flex justify-center gap-4 px-4 py-3">
                 {navCategories.map((c) => (
-                    <Link key={c.id} href={`/${c.slug}`}>
+                    <Link
+                        key={c.id}
+                        href={`/${c.slug}`}
+                        className="text-sm font-medium text-gray-700 hover:text-green-600"
+                    >
                         {c.nameBn}
                     </Link>
                 ))}
