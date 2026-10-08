@@ -1,5 +1,6 @@
 import { Hind_Siliguri } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 const hindSiliguri = Hind_Siliguri({
   subsets: ["latin", "bengali"],
@@ -19,11 +20,11 @@ export default function RootLayout({ children }) {
       className={`${hindSiliguri.className} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <h1>Navbar</h1>
+        <Navbar></Navbar>
 
         {children}
 
-        <h1>Footer</h1>
+        {/* <h1>Footer</h1> */}
       </body>
     </html>
   );
