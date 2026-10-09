@@ -46,14 +46,14 @@ const Navbar = async () => {
         <div className="flex shrink-0 items-center gap-3 sm:gap-6">
           <Link
             href="/sign-in"
-            className="whitespace-nowrap rounded-md px-2 py-2 text-[14px] font-semibold text-[#202820] transition hover:text-green-700 sm:px-3"
+            className="flex items-center justify-center whitespace-nowrap rounded-md px-2 py-2 text-center text-[14px] font-semibold text-[#202820] transition hover:text-green-700 sm:px-3"
           >
             সাইন ইন
           </Link>
 
           <Link
             href="/sign-up"
-            className="whitespace-nowrap rounded-[11px] bg-[#07883f] px-4 py-[13px] text-[14px] font-semibold text-white shadow-[0_3px_5px_rgba(0,100,40,0.28)] transition hover:bg-[#067535] sm:px-5"
+            className="flex items-center justify-center whitespace-nowrap rounded-[11px] bg-[#07883f] px-2 py-2 text-center text-[14px] font-semibold text-white shadow-[0_3px_5px_rgba(0,100,40,0.28)] transition hover:bg-[#067535] sm:px-5"
           >
             সাইন আপ
           </Link>
