@@ -1,7 +1,10 @@
+
 import { Noto_Sans_Bengali } from "next/font/google";
 import "./globals.css";
+
 import Navbar from "@/components/Navbar/Navbar";
 import PriceTicker from "@/components/Ticker/PriceTicker";
+import Footer from "@/components/Footer/Footer";
 
 const notoSansBengali = Noto_Sans_Bengali({
   subsets: ["bengali"],
@@ -20,12 +23,18 @@ export default function RootLayout({ children }) {
     <html
       lang="bn"
       data-theme="light"
-      className={`${notoSansBengali.className} h-full antialiased`}
+      className={`${notoSansBengali.className} min-h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-screen flex-col">
         <Navbar />
+
         <PriceTicker />
-        {children}
+
+        <main className="flex-1">
+          {children}
+        </main>
+
+        <Footer />
       </body>
     </html>
   );
