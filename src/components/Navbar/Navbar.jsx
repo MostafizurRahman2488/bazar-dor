@@ -20,14 +20,14 @@ const Navbar = async () => {
       {/* Row 1: Logo, date and Auth Buttons */}
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-3">
-          <div className="bg-green-700 rounded">
+          <div className="bg-green-900 rounded">
             <Image
-            src="/images/logo-icon.png"
-            alt="বাজার দর"
-            width={48}
-            height={48}
-            priority
-          />
+              src="/images/logo-icon.png"
+              alt="বাজার দর"
+              width={48}
+              height={48}
+              priority
+            />
           </div>
 
           <div>
