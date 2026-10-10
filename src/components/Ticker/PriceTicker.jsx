@@ -7,98 +7,93 @@ const PriceTicker = async () => {
 
     try {
         const res = await fetch(
-            "https://api.abcz.workers.dev/api/bazardor/products",
-            {
-                cache: "no-store",
-            }
+            "https://api.api-store.workers.dev/api/bazardor/products",
+            { next: { revalidate: 120 } }
         );
 
-        if (!res.ok) {
-            console.error("Products API error:", res.status);
+        const contentType = res.headers.get("content-type") || "";
+
+        if (!res.ok || !contentType.includes("application/json")) {
+            console.error("Products API response invalid:", res.status);
             return null;
         }
 
-        const contentType = res.headers.get("content-type");
+        const result = await res.json();
 
-        if (!contentType?.includes("application/json")) {
-            console.error("Products API returned non-JSON response");
+        products = Array.isArray(result)
+            ? result
+            : result.products ?? result.data ?? [];
+
+        if (!Array.isArray(products) || products.length === 0) {
             return null;
         }
-
-        const data = await res.json();
-
-        products = Array.isArray(data)
-            ? data
-            : Array.isArray(data.products)
-                ? data.products
-                : [];
     } catch (error) {
-        console.error("Products API error:", error);
+        console.error("Price ticker error:", error);
         return null;
     }
-
-    const unitBn = {
-        kg: "কেজি",
-        liter: "লিটার",
-        litre: "লিটার",
-        piece: "পিস",
-        dozen: "ডজন",
-        ton: "টন",
-    };
-
-    const formatBn = (value) =>
-        Number(value ?? 0).toLocaleString("bn-BD", {
-            maximumFractionDigits: 2,
-        });
 
     return (
         <section
             aria-label="আজকের বাজার দর"
-            className="w-full overflow-hidden border-y border-[#e8eeea] bg-[#fafcfb]"
+            className="flex w-full overflow-hidden border-b border-gray-200 bg-white"
         >
-            <MarqueeText direction="right">
-                <div className="flex w-max items-stretch">
-                    {products.map((product) => {
-                        const isUp = product.change?.dir === "up";
-                        const unit = unitBn[product.unit] || product.unit || "";
+            <div className="flex shrink-0 items-center bg-green-700 px-3 text-sm font-bold text-white sm:px-4">
+                বাজার দর
+            </div>
 
-                        return (
-                            <div
-                                key={product.id}
-                                className="flex min-h-[46px] shrink-0 items-center gap-2 border-r border-[#e8eeea] px-4 py-2 text-[14px] leading-6"
-                            >
-                                {/* Category icon from API */}
-                                {product.categoryIcon && (
-                                    <span className="shrink-0" aria-hidden="true">
-                                        {product.categoryIcon}
-                                    </span>
-                                )}
+            <div className="min-w-0 flex-1 overflow-hidden">
+                <MarqueeText direction="left">
+                    <div className="flex w-max items-center">
+                        {products.map((product) => {
+                            const direction = product.change?.dir;
+                            const isUp = direction === "up";
+                            const isDown = direction === "down";
 
-                                {/* Product name */}
-                                <span className="whitespace-nowrap font-semibold text-[#303830]">
-                                    {product.nameBn}
-                                </span>
+                            const name =
+                                product.nameBn ?? product.name ?? "পণ্য";
 
-                                {/* Current price */}
-                                <span className="whitespace-nowrap text-[#454d46]">
-                                    {formatBn(product.today)} টাকা/{unit}
-                                </span>
+                            const price =
+                                product.today ?? product.price ?? "—";
 
-                                {/* Price change */}
-                                <span
-                                    className={`whitespace-nowrap font-semibold ${isUp ? "text-red-500" : "text-emerald-600"
-                                        }`}
+                            const unit = product.unit ?? "একক";
+                            const percentage = product.change?.pct ?? 0;
+
+                            return (
+                                <div
+                                    key={product.id ?? product.slug ?? name}
+                                    className="flex shrink-0 items-center gap-2 border-r border-gray-200 px-4 py-3 text-sm"
                                 >
-                                    {isUp ? "▲" : "▼"}{" "}
-                                    {formatBn(product.change?.pct)}%
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
-            </MarqueeText>
+                                    <span>{product.emoji ?? "🛒"}</span>
+
+                                    <span className="font-semibold text-gray-800">
+                                        {name}
+                                    </span>
+
+                                    <span className="whitespace-nowrap text-gray-600">
+                                        {price} টাকা/{unit}
+                                    </span>
+
+                                    <span
+                                        className={
+                                            isUp
+                                                ? "font-semibold text-red-600"
+                                                : isDown
+                                                    ? "font-semibold text-green-700"
+                                                    : "text-gray-500"
+                                        }
+                                    >
+                                        {isUp ? "▲" : isDown ? "▼" : "—"}{" "}
+                                        {percentage}%
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </MarqueeText>
+            </div>
         </section>
     );
 };
 
 export default PriceTicker;
+

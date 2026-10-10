@@ -1,66 +1,83 @@
 
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
-const NavLinks = async () => {
-  let navCategories = [];
+const NavLinks = () => {
+  const pathname = usePathname();
+  const [categories, setCategories] = useState([]);
 
-  try {
-    const res = await fetch(
-      "https://api.abcz.workers.dev/api/bazardor/categories",
-      {
-        cache: "no-store",
+  useEffect(() => {
+    const getCategories = async () => {
+      try {
+        const res = await fetch(
+          "https://api.api-store.workers.dev/api/bazardor/categories"
+        );
+
+        const contentType = res.headers.get("content-type") || "";
+
+        if (!res.ok || !contentType.includes("application/json")) {
+          throw new Error("Categories API থেকে valid JSON আসেনি");
+        }
+
+        const result = await res.json();
+
+        const list = Array.isArray(result)
+          ? result
+          : result.categories ?? result.data ?? [];
+
+        setCategories(Array.isArray(list) ? list : []);
+      } catch (error) {
+        console.error("Category fetch error:", error);
       }
-    );
+    };
 
-    if (!res.ok) {
-      console.error("Categories API error:", res.status);
-    } else {
-      const contentType = res.headers.get("content-type");
+    getCategories();
+  }, []);
 
-      if (contentType?.includes("application/json")) {
-        const data = await res.json();
-
-        navCategories = Array.isArray(data)
-          ? data
-          : Array.isArray(data.categories)
-            ? data.categories
-            : [];
-      }
-    }
-  } catch (error) {
-    console.error("Categories API error:", error);
-  }
+  const linkClass = (active) =>
+    `whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold transition ${active
+      ? "bg-[#07883f] text-white"
+      : "text-gray-700 hover:bg-green-50 hover:text-green-700"
+    }`;
 
   return (
-    <div className="border-t border-[#edf1ee]">
-      <nav
-        aria-label="Product categories"
-        className="mx-auto max-w-[1280px] overflow-x-auto px-4 sm:px-6"
-      >
-        <div className="flex h-[55px] min-w-max items-center gap-7 pl-2 sm:gap-9 sm:pl-6">
-          {navCategories.map((category) => (
-            <Link
-              key={category.id}
-              href={`/category/${category.slug}`}
-              className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[13px] font-medium text-[#242b25] transition-colors hover:text-green-700"
-            >
-              {/* Icon directly from API */}
-              {category.icon && (
-                <span
-                  aria-hidden="true"
-                  className="inline-flex items-center justify-center"
-                >
-                  {category.icon}
-                </span>
-              )}
+    <nav
+      aria-label="পণ্যের ক্যাটাগরি"
+      className="border-t border-[#e5ece7]"
+    >
+      <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-2 sm:px-6">
+        <Link
+          href="/"
+          aria-current={pathname === "/" ? "page" : undefined}
+          className={linkClass(pathname === "/")}
+        >
+          সব পণ্য
+        </Link>
 
-              <span>{category.nameBn}</span>
+        {categories.map((category) => {
+          const href = `/category/${category.slug}`;
+
+          const active =
+            pathname === href || pathname.startsWith(`${href}/`);
+
+          return (
+            <Link
+              key={category.id ?? category.slug}
+              href={href}
+              aria-current={active ? "page" : undefined}
+              className={linkClass(active)}
+            >
+              {category.nameBn ?? category.name}
             </Link>
-          ))}
-        </div>
-      </nav>
-    </div>
+          );
+        })}
+      </div>
+    </nav>
   );
 };
 
 export default NavLinks;
+

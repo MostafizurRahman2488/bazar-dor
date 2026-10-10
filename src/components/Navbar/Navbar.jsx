@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 import NavLinks from "./NavLinks";
+import { AuthButtons } from "./MobileMenu";
 
 const Navbar = async () => {
   await connection();
@@ -15,55 +16,38 @@ const Navbar = async () => {
   });
 
   return (
-    <header className="w-full border-b border-[#e9eeea] bg-[#fafcfb]">
-      {/* Top Row */}
-      <nav className="mx-auto flex h-[78px] max-w-[1280px] items-center justify-between px-4 sm:px-6">
-        {/* Logo + Brand */}
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <div className="flex h-[46px] w-[46px] items-center justify-center rounded-[15px] bg-[#07883f]">
+    <header className="w-full border-b border-[#e5ece7] bg-[#fafcfb]">
+      {/* Row 1: Logo, date and Auth Buttons */}
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <Link href="/" className="flex shrink-0 items-center gap-3">
+          <div className="bg-green-700 rounded">
             <Image
-              src="/images/logo-icon.png"
-              alt="বাজার দর"
-              width={36}
-              height={36}
-              priority
-              className="object-contain"
-            />
+            src="/images/logo-icon.png"
+            alt="বাজার দর"
+            width={48}
+            height={48}
+            priority
+          />
           </div>
 
-          <div className="flex flex-col">
-            <h1 className="text-[22px] font-bold leading-[27px] text-[#202820]">
+          <div>
+            <h1 className="text-xl font-bold text-[#202820] sm:text-2xl">
               বাজার দর
             </h1>
-
-            <p className="whitespace-nowrap text-[12px] leading-[18px] text-[#353b36]">
+            <p className="text-xs text-gray-500 sm:text-sm">
               {date}
             </p>
           </div>
         </Link>
 
-        {/* Sign In / Sign Up */}
-        <div className="flex shrink-0 items-center gap-3 sm:gap-6">
-          <Link
-            href="/signin"
-            className="flex items-center justify-center whitespace-nowrap rounded-md px-2 py-2 text-center text-[14px] font-semibold text-[#202820] transition hover:text-green-700 sm:px-3"
-          >
-            সাইন ইন
-          </Link>
+        <AuthButtons />
+      </div>
 
-          <Link
-            href="/signup"
-            className="flex items-center justify-center whitespace-nowrap rounded-[11px] bg-[#07883f] px-2 py-2 text-center text-[14px] font-semibold text-white shadow-[0_3px_5px_rgba(0,100,40,0.28)] transition hover:bg-[#067535] sm:px-5"
-          >
-            সাইন আপ
-          </Link>
-        </div>
-      </nav>
-
-      {/* Bottom Category Row */}
+      {/* Row 2: Category Navigation */}
       <NavLinks />
     </header>
   );
 };
 
 export default Navbar;
+

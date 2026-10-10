@@ -1,113 +1,32 @@
-"use cache";
 
-import React from "react";
+import { getProducts } from "@/services/productService";
+import ProductGrid from "@/components/Product/ProductGrid";
 
-const RisingProducts = async () => {
-    const res = await fetch(
-        "https://api.api-store.workers.dev/api/bazardor/products",
-        {
-            cache: "no-store",
-        }
-    );
+export default async function RisingProducts() {
+  const allProducts = await getProducts();
 
-    if (!res.ok) {
-        console.log("Products API error:", await res.text());
-        return null;
-    }
+  const risingProducts = allProducts
+    .filter((product) => product.change?.dir === "up")
+    .sort(
+      (a, b) =>
+        Math.abs(Number(b.change?.pct || 0)) -
+        Math.abs(Number(a.change?.pct || 0))
+    )
+    .slice(0, 6);
 
-    const contentType = res.headers.get("content-type");
+  return (
+    <section className="mx-auto max-w-7xl px-5 py-10">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">
+          আজ দাম বেড়েছে ▲
+        </h2>
 
-    if (!contentType?.includes("application/json")) {
-        console.log("Products API returned HTML instead of JSON");
-        console.log(await res.text());
-        return null;
-    }
+        <p className="mt-1 text-sm text-gray-500">
+          আজ সবচেয়ে বেশি দাম বেড়েছে এমন ৬টি পণ্য
+        </p>
+      </div>
 
-    const allProducts = await res.json();
-
-    const risingProducts = allProducts.filter(
-        (product) => product.change?.dir === "up"
-    );
-
-    const unitBn = {
-        kg: "কেজি",
-        liter: "লিটার",
-        litre: "লিটার",
-        piece: "পিস",
-    };
-
-    return (
-        <section className="px-5 py-10 max-w-7xl mx-auto">
-
-            {/* Heading */}
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
-                    সব পণ্য
-                </h2>
-
-                <p className="text-sm text-gray-600 mt-1">
-                    মোট {allProducts.length}টি পণ্য দেখানো হচ্ছে
-                </p>
-            </div>
-
-            {/* Product Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                {risingProducts.map((product) => (
-                    <div
-                        key={product.id}
-                        className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
-                    >
-                        {/* Top */}
-                        <div className="flex items-center gap-3">
-
-                            {/* Image Placeholder */}
-                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <div className="w-5 h-5 bg-gray-800"></div>
-                            </div>
-
-                            <div>
-                                <h3 className="font-semibold text-gray-800">
-                                    {product.nameBn}
-                                </h3>
-
-                                <p className="text-xs text-gray-500">
-                                    প্রতি {product.unit}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Price */}
-                        <div className="mt-5">
-                            <p className="text-xs text-gray-500">
-                                আজকের বাজার
-                            </p>
-
-                            <div className="flex items-center justify-between mt-1">
-                                <p className="text-lg font-bold text-gray-800">
-                                    {product.today} টাকা
-                                </p>
-
-                                {/* Price Change */}
-
-                                <span
-                                    className={
-                                        product.change.dir === "up"
-                                            ? "text-red-500"
-                                            : "text-green-500"
-                                    }
-                                >
-                                    {product.change.dir === "up" ? "▲" : "▼"}{" "}
-                                    {Number(product.change.pct).toLocaleString("bn-BD")}%
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-
-            </div>
-        </section>
-    );
-};
-
-export default RisingProducts;
+      <ProductGrid products={risingProducts} />
+    </section>
+  );
+}
