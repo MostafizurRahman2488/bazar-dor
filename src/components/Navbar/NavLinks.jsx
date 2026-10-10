@@ -19,7 +19,7 @@ const NavLinks = () => {
         const contentType = res.headers.get("content-type") || "";
 
         if (!res.ok || !contentType.includes("application/json")) {
-          throw new Error("Categories API থেকে valid JSON আসেনি");
+          throw new Error("Categories API response is invalid");
         }
 
         const result = await res.json();
@@ -37,26 +37,12 @@ const NavLinks = () => {
     getCategories();
   }, []);
 
-  const linkClass = (active) =>
-    `whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold transition ${active
-      ? "bg-[#07883f] text-white"
-      : "text-gray-700 hover:bg-green-50 hover:text-green-700"
-    }`;
-
   return (
     <nav
       aria-label="পণ্যের ক্যাটাগরি"
-      className="border-t border-[#e5ece7]"
+      className="border-t border-[#edf1ed]"
     >
-      <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-2 sm:px-6">
-        <Link
-          href="/"
-          aria-current={pathname === "/" ? "page" : undefined}
-          className={linkClass(pathname === "/")}
-        >
-          সব পণ্য
-        </Link>
-
+      <div className="mx-auto flex min-h-[60px] max-w-7xl items-center gap-2 overflow-x-auto px-4 py-2 sm:gap-5 sm:px-6">
         {categories.map((category) => {
           const href = `/category/${category.slug}`;
 
@@ -68,9 +54,16 @@ const NavLinks = () => {
               key={category.id ?? category.slug}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={linkClass(active)}
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold transition ${active
+                ? "bg-[#e8f5ec] text-[#07883f]"
+                : "text-[#252d27] hover:bg-[#f0f6f1]"
+                }`}
             >
-              {category.nameBn ?? category.name}
+              <span aria-hidden="true">
+                {category.icon ?? category.categoryIcon ?? "▪"}
+              </span>
+
+              <span>{category.nameBn ?? category.name}</span>
             </Link>
           );
         })}
@@ -80,4 +73,3 @@ const NavLinks = () => {
 };
 
 export default NavLinks;
-

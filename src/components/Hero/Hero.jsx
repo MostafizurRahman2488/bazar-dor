@@ -4,49 +4,58 @@ import Link from "next/link";
 
 const Hero = () => {
   return (
-    <section className="bg-[#f4f9f5]">
-      <div className="container mx-auto px-4 py-10 sm:px-6 sm:py-14 lg:py-20">
-        <div className="flex flex-col items-center gap-10 md:flex-row md:justify-between lg:gap-16">
+    <section className="bg-[#F0F5F0] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid min-h-[340px] items-center gap-6 rounded-[28px] border border-[#DFE8DF] bg-[#FAFCFA] px-5 py-8 shadow-sm sm:px-8 md:grid-cols-[1.5fr_0.8fr] md:px-12 md:py-10 lg:px-14">
 
-          {/* Left: Hero Content */}
-          <div className="w-full md:w-1/2">
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700">
+          {/* Left Content */}
+          <div className="order-2 md:order-1">
+            {/* Green Label */}
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#078A43] px-5 py-2 text-sm font-semibold text-white">
+              <span className="h-2 w-2 rounded-full bg-white" />
               বাংলাদেশের দৈনিক বাজার দর
-            </span>
+            </div>
 
-            <h1 className="mt-5 text-3xl font-bold leading-tight text-[#202820] sm:text-4xl lg:text-5xl">
-              আজকের বাজারের দাম
-              <span className="mt-2 block text-green-700">
-                এক নজরে
-              </span>
+            {/* Heading */}
+            <h1 className="max-w-2xl text-3xl font-extrabold leading-tight tracking-tight text-[#202B23] sm:text-4xl lg:text-[40px]">
+              আজকের বাজারের দাম এক নজরে
             </h1>
 
-            <p className="mt-5 max-w-xl text-base leading-8 text-gray-600 sm:text-lg">
-              চাল, ডাল, তেল, সবজি, মাছ, মাংস, ডিম ও মসলার দাম —
-              বাজারভিত্তিক বিস্তারিত, গড়, সর্বনিম্ন-সর্বাধিক এবং
-              দামের পরিবর্তন এক জায়গায়।
+            {/* Description */}
+            <p className="mt-5 max-w-xl text-base leading-8 text-[#465249] sm:text-lg">
+              চাল, ডাল, তেল, সবজি, মাছ, মাংস, ডিম ও মসলার
+              দাম — বাজারভিত্তিক বিস্তারিত, গড়, সর্বনিম্ন-
+              সর্বোচ্চ এবং দামের পরিবর্তন এক জায়গায়।
             </p>
 
-            <Link
-              href="#সব-পণ্য"
-              className="mt-7 inline-flex items-center justify-center gap-2 rounded-lg bg-[#07883f] px-6 py-3 font-semibold text-white transition hover:bg-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700"
-            >
-              সব পণ্য দেখুন
-              <span aria-hidden="true">→</span>
-            </Link>
+            {/* Button */}
+            <div className="mt-7">
+              <Link
+                href="#সব-পণ্য"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#078A43] px-7 py-3.5 font-bold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#067537] hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-green-700"
+              >
+                সব পণ্য দেখুন
+                <span aria-hidden="true" className="text-xl">
+                  →
+                </span>
+              </Link>
+            </div>
           </div>
 
-          {/* Right: Hero Image */}
-          <div className="w-full md:w-1/2">
-            <div className="relative mx-auto max-w-lg">
+          {/* Right Image */}
+          <div className="order-1 flex items-center justify-center md:order-2">
+            <div className="relative flex w-full max-w-[340px] items-center justify-center">
+              {/* Soft Background */}
+              <div className="absolute h-48 w-48 rounded-full bg-[#E4F2E6] blur-3xl sm:h-60 sm:w-60" />
+
               <Image
                 src="/images/bazar-hero.png"
-                alt="বাজার দর — নিত্যপ্রয়োজনীয় পণ্যের বাজার"
-                width={600}
-                height={500}
+                alt="বাজারের ঝুড়িতে তাজা শাকসবজি"
+                width={400}
+                height={320}
                 priority
-                className="h-auto w-full object-contain"
-                sizes="(max-width: 768px) 100vw, 50vw"
+                sizes="(max-width: 768px) 90vw, 35vw"
+                className="relative h-auto w-full object-contain"
               />
             </div>
           </div>

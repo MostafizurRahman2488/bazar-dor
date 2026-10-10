@@ -4,6 +4,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import NavLinks from "./NavLinks";
 import { AuthButtons } from "./MobileMenu";
+import PriceTicker from "../Ticker/PriceTicker";
 
 const Navbar = async () => {
   await connection();
@@ -16,25 +17,26 @@ const Navbar = async () => {
   });
 
   return (
-    <header className="w-full border-b border-[#e5ece7] bg-[#fafcfb]">
-      {/* Row 1: Logo, date and Auth Buttons */}
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-3">
-          <div className="bg-green-900 rounded">
+    <header className="sticky top-0 z-50 w-full border-b border-[#e8eee9] bg-[#fafcfb]">
+      {/* First Row */}
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5">
+          <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-[#07883f]">
             <Image
               src="/images/logo-icon.png"
               alt="বাজার দর"
               width={48}
               height={48}
               priority
+              className="h-full w-full object-contain"
             />
           </div>
 
           <div>
-            <h1 className="text-xl font-bold text-[#202820] sm:text-2xl">
+            <h1 className="text-xl font-bold leading-tight text-[#202820] sm:text-2xl">
               বাজার দর
             </h1>
-            <p className="text-xs text-gray-500 sm:text-sm">
+            <p className="mt-1 text-xs text-[#454d47] sm:text-sm">
               {date}
             </p>
           </div>
@@ -43,11 +45,11 @@ const Navbar = async () => {
         <AuthButtons />
       </div>
 
-      {/* Row 2: Category Navigation */}
+      {/* Second Row */}
       <NavLinks />
+      <PriceTicker />
     </header>
   );
 };
 
 export default Navbar;
-
