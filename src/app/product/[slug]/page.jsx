@@ -1,7 +1,7 @@
 
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getProducts } from "@/services/productService";
+import { getProducts } from "@/services/productServices";
 
 export default async function ProductDetailsPage({ params }) {
   const { slug } = await params;

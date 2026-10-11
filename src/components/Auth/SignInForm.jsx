@@ -131,7 +131,7 @@ const SignInForm = () => {
                     <p className="pt-1 text-center text-sm text-gray-600">
                         অ্যাকাউন্ট নেই?{" "}
                         <Link
-                            href="/sign-up"
+                            href="/signup"
                             className="font-medium text-green-700 hover:text-green-800 hover:underline"
                         >
                             সাইন আপ করুন

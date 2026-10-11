@@ -1,4 +1,23 @@
-import { auth } from "@/lib/auth"; // path to your auth file
+
+import { auth, connectPromise } from "@/lib/auth";
 import { toNextJsHandler } from "better-auth/next-js";
 
-export const { POST, GET } = toNextJsHandler(auth);
+const handler = toNextJsHandler(auth);
+
+async function ensureConnection(request) {
+  await connectPromise;
+
+  if (request.method === "GET") {
+    return handler.GET(request);
+  }
+
+  return handler.POST(request);
+}
+
+export async function GET(request) {
+  return ensureConnection(request);
+}
+
+export async function POST(request) {
+  return ensureConnection(request);
+}

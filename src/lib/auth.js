@@ -12,11 +12,19 @@ if (!mongoUrl) {
 const globalForMongo = globalThis;
 
 const client =
-  globalForMongo.mongoClient ??
-  new MongoClient(mongoUrl);
+  globalForMongo.mongoClient ?? new MongoClient(mongoUrl);
 
 if (!globalForMongo.mongoClient) {
   globalForMongo.mongoClient = client;
+}
+
+// Reuse the connection promise during development.
+const connectPromise =
+  globalForMongo.mongoConnectPromise ??
+  client.connect();
+
+if (!globalForMongo.mongoConnectPromise) {
+  globalForMongo.mongoConnectPromise = connectPromise;
 }
 
 const db = client.db("bazar-dor");
@@ -33,3 +41,5 @@ export const auth = betterAuth({
     enabled: true,
   },
 });
+
+export { client, connectPromise };

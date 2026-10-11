@@ -8,6 +8,7 @@ import { authClient } from "@/lib/auth-client";
 const SignUpForm = () => {
     const router = useRouter();
 
+
     const onSubmit = async (e) => {
         e.preventDefault();
 
@@ -20,39 +21,75 @@ const SignUpForm = () => {
             .get("confirmPassword")
             ?.toString();
 
-        // Password confirmation যাচাই
+        if (!name || !email || !password || !confirmPassword) {
+            alert("সবগুলো ফিল্ড পূরণ করুন।");
+            return;
+        }
+
+        if (password.length < 8) {
+            alert("পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।");
+            return;
+        }
+
         if (password !== confirmPassword) {
             alert("দুটি পাসওয়ার্ড একই নয়!");
             return;
         }
 
         try {
-            const { data, error } = await authClient.signUp.email({
+            console.log("Signup started:", { name, email });
+
+            const result = await authClient.signUp.email({
                 name,
                 email,
                 password,
                 callbackURL: "/",
             });
 
+            console.log("Signup response:", result);
+
+            const { data, error } = result ?? {};
+
             if (error) {
-                console.error("Better Auth signup error:", error);
-                alert(error.message || "সাইন আপ করা যায়নি।");
+                console.error(
+                    "Signup error details:",
+                    JSON.stringify(
+                        error,
+                        Object.getOwnPropertyNames(error),
+                        2
+                    )
+                );
+
+                alert(
+                    error.message ||
+                    `Signup failed: ${error.status || "Unknown error"}`
+                );
                 return;
             }
 
             if (data) {
                 console.log("Signup successful:", data);
+
+                // Email verification চালু থাকলে
+                // আগে email verification সম্পন্ন করতে হবে।
                 router.push("/");
+                router.refresh();
+            } else {
+                console.error("Unexpected signup response:", result);
+                alert("সাইন আপের ফলাফল পাওয়া যায়নি।");
             }
         } catch (err) {
-            console.error("Signup request failed:", err);
-            alert("সার্ভারে সমস্যা হয়েছে। Terminal-এর error দেখুন।");
+            console.error("Signup request exception:", err);
+            console.error("Exception message:", err?.message);
+            console.error("Exception stack:", err?.stack);
+
+            alert(
+                err?.message ||
+                "সার্ভারের সঙ্গে সংযোগ করা যায়নি।"
+            );
         }
-
-
-        console.log();
-
     };
+
 
     return (
         <div>
@@ -201,7 +238,7 @@ const SignUpForm = () => {
                         <p className="pt-1 text-center text-sm text-gray-600">
                             অ্যাকাউন্ট আছে?{" "}
                             <Link
-                                href="/sign-in"
+                                href="/signin"
                                 className="font-medium text-green-700 hover:text-green-800 hover:underline"
                             >
                                 সাইন ইন করুন

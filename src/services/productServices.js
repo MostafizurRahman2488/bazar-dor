@@ -1,34 +1,31 @@
 
 const PRODUCTS_API =
-    "https://openapi.programming-hero.com/api/bazardor/products";
+  "https://api.api-store.workers.dev/api/bazardor/products";
 
 export async function getProducts() {
-    try {
-        const res = await fetch(PRODUCTS_API, {
-            next: { revalidate: 300 },
-        });
+  const response = await fetch(PRODUCTS_API, {
+    next: { revalidate: 120 },
+  });
 
-        if (!res.ok) {
-            console.error("Products API error:", res.status);
-            return [];
-        }
+  if (!response.ok) {
+    throw new Error(`Products fetch failed: ${response.status}`);
+  }
 
-        const contentType = res.headers.get("content-type");
+  const contentType = response.headers.get("content-type") || "";
 
-        if (!contentType?.includes("application/json")) {
-            console.error("Products API did not return JSON");
-            return [];
-        }
+  if (!contentType.includes("application/json")) {
+    throw new Error("Products API did not return JSON");
+  }
 
-        const result = await res.json();
+  const result = await response.json();
 
-        const products = Array.isArray(result)
-            ? result
-            : result?.data ?? result?.products ?? [];
+  if (Array.isArray(result)) {
+    return result;
+  }
 
-        return Array.isArray(products) ? products : [];
-    } catch (error) {
-        console.error("Failed to fetch products:", error);
-        return [];
-    }
+  if (Array.isArray(result.data)) {
+    return result.data;
+  }
+
+  return [];
 }
