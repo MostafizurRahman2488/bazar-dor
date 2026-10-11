@@ -74,7 +74,7 @@ export default function ProductCard({ product }) {
 
     return (
         <Link
-            href={`/products/${product.slug}`}
+            href={`/product/${product.slug}`}
             aria-label={`${product.nameBn} এর বিস্তারিত দেখুন`}
             className="group block rounded-[21px] border border-[#dfe7e0] bg-[#fbfdfb] p-5 transition duration-200 hover:-translate-y-1 hover:border-green-300 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-green-600"
         >

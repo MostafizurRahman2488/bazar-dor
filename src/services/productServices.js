@@ -1,6 +1,6 @@
 
 const PRODUCTS_API =
-    "https://api-store-indol.vercel.app/api/bazardor/products";
+    "https://openapi.programming-hero.com/api/bazardor/products";
 
 export async function getProducts() {
     try {
