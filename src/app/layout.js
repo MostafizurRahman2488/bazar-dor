@@ -25,11 +25,8 @@ export default function RootLayout({ children }) {
       data-theme="light"
       className={`${notoSansBengali.className} min-h-full antialiased`}
     >
-      <body className="flex min-h-screen flex-col">
+      <body className="flex min-h-screen flex-col bg-[#F0F5F0]">
         <Navbar />
-
-
-
         <main className="flex-1">
           {children}
         </main>

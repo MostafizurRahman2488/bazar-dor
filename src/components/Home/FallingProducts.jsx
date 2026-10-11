@@ -16,14 +16,11 @@ export default async function FallingProducts() {
 
     return (
         <section className="mx-auto max-w-7xl px-5 py-10">
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
-                    আজ দাম কমেছে ▼
+            <div className="mb-6 ml-4">
+                <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+                    <span className="text-green-600">▼</span>
+                    আজ দাম কমেছে
                 </h2>
-
-                <p className="mt-1 text-sm text-gray-500">
-                    আজ সবচেয়ে বেশি দাম কমেছে এমন ৬টি পণ্য
-                </p>
             </div>
 
             <ProductGrid products={fallingProducts} />

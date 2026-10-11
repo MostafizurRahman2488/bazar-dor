@@ -22,7 +22,7 @@ export default async function ProductDetailsPage({ params }) {
   return (
     <main className="mx-auto max-w-4xl px-5 py-12">
       <Link
-        href="/"
+        href={`/products/${product.slug}`}
         className="text-sm font-medium text-green-700 hover:underline"
       >
         ← হোমপেজে ফিরে যান
