@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -9,100 +10,207 @@ import ProductSummary from "@/components/ProductDetails/ProductSummary";
 import PriceSummary from "@/components/ProductDetails/PriceSummary";
 import MarkerPrices from "@/components/ProductDetails/MarkerPrices";
 
-// Requirement 4: safely convert price values to numbers.
 function toNumber(value) {
-  if (value === null || value === undefined || value === "") {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
     return null;
   }
 
   const number = Number(value);
-  return Number.isFinite(number) && number >= 0 ? number : null;
+
+  return Number.isFinite(number) && number >= 0
+    ? number
+    : null;
 }
 
-// Requirement 4C: collect price information from different markets.
+function normalize(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-");
+}
+
 function getMarketRows(product) {
   const rawMarkets =
     product.marketPrices ??
+    product.market_prices ??
     product.markets ??
     product.bazarPrices ??
-    product.market_prices ??
+    product.bazars ??
     [];
 
-  if (!Array.isArray(rawMarkets)) return [];
+  if (!Array.isArray(rawMarkets)) {
+    return [];
+  }
 
   return rawMarkets.map((market) => ({
     ...market,
+
+    name:
+      market.name ??
+      market.marketName ??
+      market.market_name ??
+      market.bazarName ??
+      market.bazar ??
+      market.market,
+
+    area:
+      market.area ??
+      market.location ??
+      market.district ??
+      market.city,
+
     today: toNumber(
-      market.today ?? market.priceToday ?? market.price
+      market.today ??
+      market.priceToday ??
+      market.todayPrice ??
+      market.currentPrice ??
+      market.price
     ),
+
     yesterday: toNumber(
-      market.yesterday ?? market.priceYesterday
+      market.yesterday ??
+      market.priceYesterday ??
+      market.yesterdayPrice
     ),
+
     lastWeek: toNumber(
-      market.lastWeek ?? market.priceLastWeek
+      market.lastWeek ??
+      market.priceLastWeek ??
+      market.lastWeekPrice
     ),
+
     lastMonth: toNumber(
-      market.lastMonth ?? market.priceLastMonth
+      market.lastMonth ??
+      market.priceLastMonth ??
+      market.lastMonthPrice
     ),
   }));
 }
 
-// Requirement 4B: calculate minimum, maximum and average price.
 function getPriceStats(product, markets) {
-  const todayPrices = markets
+  const marketPrices = markets
     .map((market) => market.today)
     .filter((price) => price !== null);
 
-  const min = toNumber(product.minPrice ?? product.minimumPrice);
-  const max = toNumber(product.maxPrice ?? product.maximumPrice);
-  const avg = toNumber(product.averagePrice ?? product.avgPrice);
+  const minFromApi = toNumber(
+    product.minPrice ??
+    product.minimumPrice ??
+    product.min_price
+  );
+
+  const maxFromApi = toNumber(
+    product.maxPrice ??
+    product.maximumPrice ??
+    product.max_price
+  );
+
+  const avgFromApi = toNumber(
+    product.averagePrice ??
+    product.avgPrice ??
+    product.average_price
+  );
 
   return {
-    min: min ?? (
-      todayPrices.length ? Math.min(...todayPrices) : null
-    ),
-    max: max ?? (
-      todayPrices.length ? Math.max(...todayPrices) : null
-    ),
-    avg: avg ?? (
-      todayPrices.length
-        ? todayPrices.reduce((sum, price) => sum + price, 0) /
-          todayPrices.length
-        : toNumber(product.today)
-    ),
+    min:
+      minFromApi ??
+      (marketPrices.length
+        ? Math.min(...marketPrices)
+        : null),
+
+    max:
+      maxFromApi ??
+      (marketPrices.length
+        ? Math.max(...marketPrices)
+        : null),
+
+    avg:
+      avgFromApi ??
+      (marketPrices.length
+        ? marketPrices.reduce(
+            (sum, price) => sum + price,
+            0
+          ) / marketPrices.length
+        : toNumber(product.todayPrice)),
   };
 }
 
-export default async function ProductDetailsPage({ params }) {
+export default async function ProductDetailsPage({
+  params,
+}) {
   const { slug } = await params;
 
-  // Requirement 4: protect this page; login is required.
+  // Protected route: login required
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
   if (!session) {
     redirect(
-      `/signin?callbackURL=${encodeURIComponent(`/product/${slug}`)}`
+      `/signin?callbackURL=${encodeURIComponent(
+        `/product/${slug}`
+      )}`
     );
   }
 
-  // Fetch product data from the existing service.
-  const products = await getProducts();
+  let products;
 
-  const product = products.find(
-    (item) =>
-      String(item.slug) === String(slug) ||
-      String(item.id) === String(slug)
-  );
+  try {
+    products = await getProducts();
+  } catch (error) {
+    console.error("Product API error:", error);
 
-  // Invalid product slug -> 404 page.
+    return (
+      <main className="min-h-screen bg-[#f0f5f0] px-4 py-16">
+        <div className="mx-auto max-w-2xl rounded-2xl border bg-white p-8 text-center">
+          <h1 className="text-xl font-bold text-gray-800">
+            পণ্যের তথ্য লোড করা যায়নি
+          </h1>
+
+          <p className="mt-3 text-sm text-gray-600">
+            API সংযোগে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।
+          </p>
+
+          <Link
+            href="/"
+            className="mt-6 inline-block rounded-xl bg-green-700 px-5 py-3 font-semibold text-white"
+          >
+            হোম পেজে ফিরে যান
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const product = products.find((item) => {
+    const identifiers = [
+      item.slug,
+      item.id,
+      item._id,
+      item.productId,
+      item.productSlug,
+    ];
+
+    return identifiers.some(
+      (value) =>
+        value != null &&
+        normalize(value) === normalize(slug)
+    );
+  });
+
   if (!product) {
     notFound();
   }
 
   const markets = getMarketRows(product);
   const prices = getPriceStats(product, markets);
+
+  const rawUnit = String(
+    product.unit ?? product.unitName ?? "পিস"
+  ).toLowerCase();
 
   const unitNames = {
     kg: "প্রতি কেজি",
@@ -115,25 +223,48 @@ export default async function ProductDetailsPage({ params }) {
     dozen: "প্রতি ডজন",
   };
 
-  const rawUnit = String(product.unit || "পিস").toLowerCase();
-  const unit = unitNames[rawUnit] || `প্রতি ${product.unit || "পিস"}`;
+  const unit =
+    unitNames[rawUnit] ??
+    (rawUnit.startsWith("প্রতি ")
+      ? rawUnit
+      : `প্রতি ${rawUnit}`);
+
+  const title =
+    product.nameBn ??
+    product.name ??
+    product.titleBn ??
+    product.title ??
+    "পণ্যের বিস্তারিত";
 
   return (
-    <main className="min-h-screen bg-[#f0f5f0] px-4 py-8 sm:px-6 sm:py-12">
+    <main className="min-h-screen bg-[#f0f5f0] px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-6xl">
-        <nav aria-label="Breadcrumb" className="mb-5 text-sm text-gray-600">
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-5 flex flex-wrap items-center gap-2 text-sm text-gray-600"
+        >
           <Link href="/" className="hover:text-green-700">
             হোম
           </Link>
-          <span className="mx-2">›</span>
-          <span>পণ্যের বিস্তারিত</span>
+
+          <span>›</span>
+
+          <span>
+            {product.categoryNameBn ??
+              product.categoryBn ??
+              "পণ্য"}
+          </span>
+
+          <span>›</span>
+
+          <span className="font-medium text-gray-800">
+            {title}
+          </span>
         </nav>
 
-        <div className="space-y-6">
-          {/* Requirement 4A: emoji, title, summary, category and unit. */}
+        <div className="space-y-5 sm:space-y-6">
           <ProductSummary product={product} />
 
-          {/* Requirement 4B: minimum, maximum and average prices. */}
           <PriceSummary
             min={prices.min}
             max={prices.max}
@@ -141,11 +272,11 @@ export default async function ProductDetailsPage({ params }) {
             unit={unit}
           />
 
-          {/* Requirement 4C: market-by-market prices. */}
-          <MarkerPrices markets={markets} unit={unit} />
+          <MarkerPrices
+            markets={markets}
+            unit={unit}
+          />
         </div>
-
-       
       </div>
     </main>
   );

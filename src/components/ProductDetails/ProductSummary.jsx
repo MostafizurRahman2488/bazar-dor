@@ -1,12 +1,13 @@
+
 const unitNames = {
-  kg: "প্রতি কেজি",
-  kilogram: "প্রতি কেজি",
-  litre: "প্রতি লিটার",
-  liter: "প্রতি লিটার",
-  l: "প্রতি লিটার",
-  piece: "প্রতি পিস",
-  pcs: "প্রতি পিস",
-  dozen: "প্রতি ডজন",
+  kg: "কেজি",
+  kilogram: "কেজি",
+  litre: "লিটার",
+  liter: "লিটার",
+  l: "লিটার",
+  piece: "পিস",
+  pcs: "পিস",
+  dozen: "ডজন",
 };
 
 function getEmoji(product) {
@@ -29,28 +30,6 @@ function getEmoji(product) {
   return "🛒";
 }
 
-function getCategories(product) {
-  const categories = [
-    product.categoryNameBn,
-    product.categoryBn,
-    typeof product.category === "string" ? product.category : null,
-    product.category?.nameBn,
-    product.category?.name,
-    ...(Array.isArray(product.categories) ? product.categories : []),
-    ...(Array.isArray(product.tags) ? product.tags : []),
-  ];
-
-  return [
-    ...new Set(
-      categories.filter(
-        (category) =>
-          typeof category === "string" && category.trim()
-      )
-    ),
-  ];
-}
-
-// Requirement 4A: product summary section.
 export default function ProductSummary({ product }) {
   const title =
     product.nameBn ||
@@ -59,65 +38,95 @@ export default function ProductSummary({ product }) {
     product.title ||
     "পণ্যের নাম";
 
-  const rawUnit = String(product.unit || "পিস").toLowerCase();
+  const rawUnit = String(product.unit || "kg")
+    .trim()
+    .toLowerCase();
 
-  const unit = unitNames[rawUnit] ||
-    (rawUnit.startsWith("প্রতি ")
-      ? rawUnit
-      : `প্রতি ${product.unit || "পিস"}`);
+  const unit = unitNames[rawUnit] || product.unit || "পিস";
 
-  const categories = getCategories(product);
+  const today = Number(
+    product.today ?? product.currentPrice ?? product.current_price ?? product.minPrice ?? 0
+  );
+
+  const yesterday = Number(
+    product.yesterday ?? product.previousPrice ?? product.previous_price ?? today
+  );
+
+  // গতকাল ও আজকের দামের পার্থক্য
+  const difference = today - yesterday;
+
+  // API-তে percentage থাকলে সেটি ব্যবহার, নাহলে নিজে হিসাব
+  const change =
+    product.change?.pct ??
+    product.changePercent ??
+    product.changePercentage ??
+    (yesterday !== 0 ? (difference / yesterday) * 100 : 0);
+
+  const direction =
+    product.change?.dir ??
+    (difference < 0 ? "down" : difference > 0 ? "up" : "same");
+
+  const isDown = direction === "down";
+  const isUp = direction === "up";
 
   const summary =
-    product.marketSummary ||
-    product.summaryBn ||
-    product.descriptionBn ||
-    product.description ||
-    `${title} এর আজকের বাজারদর ও বিভিন্ন বাজারের দাম তুলনা করুন।`;
+    difference > 0
+      ? `গতকালের তুলনায় আজ দাম বেড়েছে ${difference.toLocaleString("bn-BD")} টাকা।`
+      : difference < 0
+        ? `গতকালের তুলনায় আজ দাম কমেছে ${Math.abs(difference).toLocaleString("bn-BD")} টাকা।`
+        : "গতকালের তুলনায় আজ দাম অপরিবর্তিত।";
 
   return (
-    <section
-      aria-labelledby="product-title"
-      className="rounded-3xl border border-[#e0e9e0] bg-white p-5 shadow-sm sm:p-8"
-    >
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-        <div
-          aria-hidden="true"
-          className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#eef6ee] text-5xl sm:h-24 sm:w-24 sm:text-6xl"
-        >
+    <section className="w-full rounded-2xl border border-[#e5ebe5] bg-white p-3 shadow-sm sm:p-4">
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* পণ্যের ইমোজি */}
+        <div className="flex shrink-0 items-center justify-center rounded-xl bg-[#f0f5f0] p-3 text-3xl sm:text-4xl">
           {getEmoji(product)}
         </div>
 
+        {/* পণ্যের নাম ও বিবরণ */}
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-green-700">
-            পণ্যের বিস্তারিত
-          </p>
-
-          <h1
-            id="product-title"
-            className="mt-1 text-2xl font-extrabold text-[#202820] sm:text-3xl"
-          >
+          <h1 className="text-lg font-extrabold leading-snug text-[#263129] sm:text-xl">
             {title}
           </h1>
 
-          <p className="mt-2 max-w-3xl text-sm leading-7 text-gray-600">
-            {summary}
+          <p className="mt-1 text-xs text-[#7a827b]">
+            প্রতি {unit} · {product.categoryNameBn}
           </p>
 
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {categories.map((category, index) => (
-              <span
-                key={`${category}-${index}`}
-                className="rounded-full border border-green-100 bg-green-50 px-3 py-1 text-xs font-semibold text-green-800"
-              >
-                {category}
-              </span>
-            ))}
+          <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-[#727a73] sm:text-xs">
+            {summary}
+          </p>
+        </div>
 
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
-              {unit}
-            </span>
-          </div>
+        {/* আজকের দাম */}
+        <div className="flex min-w-[76px] shrink-0 flex-col items-center justify-center self-stretch rounded-xl bg-[#f0f5f0] px-2 py-2 sm:min-w-[90px] sm:px-3">
+          <span className="text-[10px] font-medium text-[#747c75]">
+            আজকের দাম
+          </span>
+
+          <strong className="mt-0.5 text-2xl font-extrabold leading-tight text-[#263129] sm:text-3xl">
+            {today.toLocaleString("bn-BD")}
+          </strong>
+
+          <span className="mt-1 text-[10px] text-[#606961]">
+            টাকা / {unit}
+          </span>
+
+          <span
+            className={`mt-1 text-[10px] font-bold ${isDown
+                ? "text-green-600"
+                : isUp
+                  ? "text-red-500"
+                  : "text-gray-500"
+              }`}
+          >
+            {isDown ? "▼" : isUp ? "▲" : "—"}{" "}
+            {Math.abs(Number(change)).toLocaleString("bn-BD", {
+              maximumFractionDigits: 2,
+            })}
+            %
+          </span>
         </div>
       </div>
     </section>

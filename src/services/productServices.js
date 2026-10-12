@@ -8,10 +8,13 @@ export async function getProducts() {
   });
 
   if (!response.ok) {
-    throw new Error(`Products fetch failed: ${response.status}`);
+    throw new Error(
+      `Products API failed: ${response.status}`
+    );
   }
 
-  const contentType = response.headers.get("content-type") || "";
+  const contentType =
+    response.headers.get("content-type") || "";
 
   if (!contentType.includes("application/json")) {
     throw new Error("Products API did not return JSON");
@@ -19,12 +22,21 @@ export async function getProducts() {
 
   const result = await response.json();
 
+  // API response format অনুযায়ী product list বের করা
   if (Array.isArray(result)) {
     return result;
   }
 
   if (Array.isArray(result.data)) {
     return result.data;
+  }
+
+  if (Array.isArray(result.products)) {
+    return result.products;
+  }
+
+  if (Array.isArray(result.data?.products)) {
+    return result.data.products;
   }
 
   return [];

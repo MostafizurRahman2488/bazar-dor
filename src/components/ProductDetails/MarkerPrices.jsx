@@ -1,6 +1,3 @@
-"use client";
-
-import { useMemo, useState } from "react";
 
 function formatPrice(value) {
   if (
@@ -17,110 +14,132 @@ function formatPrice(value) {
   });
 }
 
-const tabs = [
-  { label: "আজকের দাম", key: "today" },
-  { label: "গতকালের দাম", key: "yesterday" },
-  { label: "গত সপ্তাহ", key: "lastWeek" },
-  { label: "গত মাস", key: "lastMonth" },
-];
+export default function MarkerPrices({
+  markets = [],
+  unit,
+}) {
+  const rows = markets.map((market) => {
+    const today = market.today;
 
-export default function MarkerPrices({ markets = [], unit }) {
-  const [activeTab, setActiveTab] = useState("today");
+    const min =
+      market.minPrice ??
+      market.minimumPrice ??
+      market.min_price ??
+      today;
+      console.log(min);
+      
+      
+      
 
-  const sortedMarkets = useMemo(() => {
-    return [...markets].sort((a, b) => {
-      const first = a[activeTab] == null ? NaN : Number(a[activeTab]);
-      const second = b[activeTab] == null ? NaN : Number(b[activeTab]);
+    const max =
+      market.maxPrice ??
+      market.maximumPrice ??
+      market.max_price ??
+      today;
 
-      if (!Number.isFinite(first)) return 1;
-      if (!Number.isFinite(second)) return -1;
+    const avg =
+      market.averagePrice ??
+      market.avgPrice ??
+      market.average_price ??
+      today;
 
-      return first - second;
-    });
-  }, [markets, activeTab]);
+    return {
+      ...market,
+      min,
+      max,
+      avg,
+    };
+  });
 
   return (
-    <section className="rounded-3xl border border-[#e0e9e0] bg-white p-5 shadow-sm sm:p-7">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+    <section className="rounded-2xl border border-[#e0e9e0] bg-white p-4 shadow-sm sm:p-6">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-extrabold text-[#202820] sm:text-2xl">
+          <h2 className="text-lg font-bold text-[#202820] sm:text-xl">
             বাজারভিত্তিক আজকের দাম
           </h2>
 
-          <p className="mt-2 text-sm text-gray-500">
-            বিভিন্ন বাজারে একই পণ্যের দাম তুলনা করুন।
+          <p className="mt-1 text-sm text-gray-500">
+            বিভিন্ন বাজারের দামের তুলনা
           </p>
         </div>
 
-        <span className="w-fit rounded-full bg-green-50 px-3 py-1.5 text-sm font-semibold text-green-800">
-          {markets.length.toLocaleString("bn-BD")}টি বাজার
+        <span className="rounded-lg bg-green-50 px-3 py-2 text-sm font-semibold text-green-800">
+          {rows.length.toLocaleString("bn-BD")}টি বাজার
         </span>
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            aria-pressed={activeTab === tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`rounded-xl px-3 py-2 text-sm font-semibold transition sm:px-4 ${activeTab === tab.key
-                ? "bg-green-700 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-green-50 hover:text-green-800"
-              }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {markets.length > 0 ? (
-        <div className="mt-5 overflow-x-auto rounded-xl border border-[#e5ebe5]">
-          <table className="w-full min-w-[600px] border-collapse text-left text-sm">
+      {rows.length > 0 ? (
+        <div className="overflow-x-auto rounded-xl border border-[#e0e9e0]">
+          <table className="w-full min-w-[650px] border-collapse text-sm">
             <thead className="bg-[#f2f7f2] text-[#303a30]">
               <tr>
-                <th className="px-4 py-3 font-bold">বাজার</th>
-                <th className="px-4 py-3 font-bold">অবস্থান</th>
-                <th className="px-4 py-3 text-right font-bold">দাম</th>
-                <th className="px-4 py-3 text-right font-bold">একক</th>
+                <th className="px-4 py-3 text-left font-bold">
+                  বাজার
+                </th>
+
+                <th className="px-4 py-3 text-left font-bold">
+                  বিভাগ
+                </th>
+
+                <th className="px-4 py-3 text-right font-bold">
+                  সর্বনিম্ন
+                </th>
+
+                <th className="px-4 py-3 text-right font-bold">
+                  সর্বাধিক
+                </th>
+
+                <th className="px-4 py-3 text-right font-bold">
+                  গড়
+                </th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-[#e5ebe5]">
-              {sortedMarkets.map((market, index) => (
+            <tbody className="divide-y divide-[#e0e9e0]">
+              {rows.map((market, index) => (
                 <tr
                   key={
                     market.id ??
                     market.marketId ??
                     market.name ??
-                    market.market ??
                     index
                   }
-                  className={index % 2 ? "bg-[#f8faf8]" : "bg-white"}
+                  className={
+                    index % 2 === 0
+                      ? "bg-white"
+                      : "bg-[#f7faf7]"
+                  }
                 >
-                  <td className="px-4 py-3 font-semibold text-gray-800">
+                  <td className="px-4 py-3 font-medium text-gray-800">
                     {market.name ??
                       market.market ??
-                      market.bazar ??
                       market.marketName ??
                       market.bazarName ??
                       `বাজার ${index + 1}`}
                   </td>
 
                   <td className="px-4 py-3 text-gray-600">
-                    {market.area ??
+                    {market.division ??
+                      market.area ??
                       market.location ??
-                      market.district ??
                       market.city ??
                       "—"}
                   </td>
 
-                  <td className="px-4 py-3 text-right font-bold text-[#202820]">
-                    {formatPrice(market[activeTab])} টাকা
+                  <td className="px-4 py-3 text-right text-green-700">
+                    {formatPrice(market.min)} টাকা
                   </td>
 
-                  <td className="px-4 py-3 text-right text-gray-500">
-                    {unit}
+                  <td className="px-4 py-3 text-right text-red-600">
+                    {formatPrice(market.max)} টাকা
+                  </td>
+
+                  <td className="px-4 py-3 text-right font-bold text-gray-800">
+                    {formatPrice(market.avg)} টাকা
+                    <span className="block text-xs font-normal text-gray-500">
+                      {unit}
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -128,16 +147,15 @@ export default function MarkerPrices({ markets = [], unit }) {
           </table>
         </div>
       ) : (
-        <div className="mt-5 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-5 py-10 text-center">
-          <div className="text-4xl">🏪</div>
+        <div className="rounded-xl border border-dashed border-gray-300 px-4 py-10 text-center">
+          <p className="text-3xl">🏪</p>
 
           <h3 className="mt-3 font-bold text-gray-800">
-            বাজারভিত্তিক দামের তথ্য পাওয়া যায়নি
+            বাজারের তথ্য পাওয়া যায়নি
           </h3>
 
-          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-gray-500">
-            API-তে বাজারের আলাদা দাম থাকলে এখানে দেখানো হবে।
-            কোনো বাজারের দাম অনুমান করে দেখানো হচ্ছে না।
+          <p className="mt-2 text-sm text-gray-500">
+            API-তে বাজারভিত্তিক দাম যুক্ত হলে এখানে দেখানো হবে।
           </p>
         </div>
       )}
