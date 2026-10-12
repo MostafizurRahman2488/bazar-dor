@@ -27,7 +27,6 @@ const SignUpForm = () => {
         if (password !== confirmPassword) {
             return alert("দুটি পাসওয়ার্ড একই নয়!");
         }
-
         const { data, error } = await authClient.signUp.email({
             name: name.trim(),
             email: email.trim(),
@@ -36,9 +35,49 @@ const SignUpForm = () => {
         });
 
         if (error) {
-            console.error("Signup error:", error);
-            return alert(error.message || "সাইন আপ ব্যর্থ হয়েছে।");
+            const code = error.code || "";
+            const message = error.message || "";
+
+            if (
+                code.includes("USER_ALREADY_EXISTS") ||
+                message.toLowerCase().includes("user already exists")
+            ) {
+                alert("এই ইমেইল দিয়ে অ্যাকাউন্ট আগে থেকেই আছে। Sign in করুন।");
+                router.replace("/signin");
+                return;
+            }
+
+            alert(message || "সাইন আপ ব্যর্থ হয়েছে।");
+            return;
         }
+
+        router.push("/");
+        router.refresh();
+
+
+
+        if (error) {
+            const errorCode = String(error.code || "").toUpperCase();
+            const errorMessage = String(error.message || "").toLowerCase();
+
+            const isExistingUser =
+                errorCode.includes("USER_ALREADY_EXISTS") ||
+                errorMessage.includes("user already exists");
+
+            if (isExistingUser) {
+                alert(
+                    "এই ইমেইল দিয়ে অ্যাকাউন্ট আগে থেকেই আছে। Sign in পেজে নিয়ে যাওয়া হচ্ছে।"
+                );
+
+                router.replace("/signin");
+                return;
+            }
+
+            console.error("Signup error:", error);
+            alert("সাইন আপ ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
+            return;
+        }
+
 
         if (data) {
             router.push("/");

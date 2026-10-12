@@ -21,6 +21,9 @@ export default async function CategoryDetailPage({ params }) {
         getCategories(),
         getProducts(),
     ]);
+    console.log(categories);
+    
+    
 
     // ২. URL-এর slug অনুযায়ী category খুঁজছি
     const category = categories.find(
