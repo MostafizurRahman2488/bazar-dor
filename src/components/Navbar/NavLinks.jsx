@@ -51,12 +51,14 @@ const NavLinks = () => {
 
           return (
 
+
             <Link
               key={category.id ?? category.slug}
-              href={`/category/${category.slug}`}
-              className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold transition ${pathname === `/category/${category.slug}`
-                ? "bg-[#e8f5ec] text-[#07883f]"
-                : "text-[#252d27] hover:bg-[#f0f6f1]"
+              href={href}
+              aria-current={active ? "page" : undefined}
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold transition-colors duration-200 ${active
+                  ? "bg-[#e8f5ec] text-[#07883f]"
+                  : "text-[#252d27] hover:bg-[#f0f6f1] hover:text-[#07883f]"
                 }`}
             >
               <span aria-hidden="true">
@@ -65,6 +67,7 @@ const NavLinks = () => {
 
               <span>{category.nameBn ?? category.name}</span>
             </Link>
+
 
           );
         })}

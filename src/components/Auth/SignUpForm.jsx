@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { authClient, signIn } from "@/lib/auth-client";
 
 
 const SignUpForm = () => {
@@ -12,84 +12,55 @@ const SignUpForm = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
 
-        const formData = new FormData(e.currentTarget);
+        const formData = Object.fromEntries(new FormData(e.currentTarget));
 
-        const name = formData.get("name")?.toString().trim();
-        const email = formData.get("email")?.toString().trim();
-        const password = formData.get("password")?.toString();
-        const confirmPassword = formData
-            .get("confirmPassword")
-            ?.toString();
+        const { name, email, password, confirmPassword } = formData;
 
-        if (!name || !email || !password || !confirmPassword) {
-            alert("সবগুলো ফিল্ড পূরণ করুন।");
-            return;
+        if (!name?.trim() || !email?.trim() || !password || !confirmPassword) {
+            return alert("সবগুলো ফিল্ড পূরণ করুন।");
         }
 
         if (password.length < 8) {
-            alert("পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।");
-            return;
+            return alert("পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।");
         }
 
         if (password !== confirmPassword) {
-            alert("দুটি পাসওয়ার্ড একই নয়!");
-            return;
+            return alert("দুটি পাসওয়ার্ড একই নয়!");
         }
 
-        try {
-            console.log("Signup started:", { name, email });
+        const { data, error } = await authClient.signUp.email({
+            name: name.trim(),
+            email: email.trim(),
+            password,
+            callbackURL: "/",
+        });
 
-            const result = await authClient.signUp.email({
-                name,
-                email,
-                password,
-                callbackURL: "/",
-            });
+        if (error) {
+            console.error("Signup error:", error);
+            return alert(error.message || "সাইন আপ ব্যর্থ হয়েছে।");
+        }
 
-            console.log("Signup response:", result);
-
-            const { data, error } = result ?? {};
-
-            if (error) {
-                console.error(
-                    "Signup error details:",
-                    JSON.stringify(
-                        error,
-                        Object.getOwnPropertyNames(error),
-                        2
-                    )
-                );
-
-                alert(
-                    error.message ||
-                    `Signup failed: ${error.status || "Unknown error"}`
-                );
-                return;
-            }
-
-            if (data) {
-                console.log("Signup successful:", data);
-
-                // Email verification চালু থাকলে
-                // আগে email verification সম্পন্ন করতে হবে।
-                router.push("/");
-                router.refresh();
-            } else {
-                console.error("Unexpected signup response:", result);
-                alert("সাইন আপের ফলাফল পাওয়া যায়নি।");
-            }
-        } catch (err) {
-            console.error("Signup request exception:", err);
-            console.error("Exception message:", err?.message);
-            console.error("Exception stack:", err?.stack);
-
-            alert(
-                err?.message ||
-                "সার্ভারের সঙ্গে সংযোগ করা যায়নি।"
-            );
+        if (data) {
+            router.push("/");
+            router.refresh();
         }
     };
 
+    const handleGoogleSignIn = async () => {
+        const resData = await signIn.social({
+            provider: 'google'
+        })
+        console.log('after google sign in', resData);
+
+    }
+
+    const handleGithubSignIn = async () => {
+        const resData = await authClient.signIn.social({
+            provider: "github"
+        })
+        console.log('after google sign in', resData);
+
+    }
 
     return (
         <div>
@@ -209,6 +180,7 @@ const SignUpForm = () => {
                         {/* Social Signup Buttons */}
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <button
+                                onClick={handleGoogleSignIn}
                                 type="button"
                                 className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                             >
@@ -219,6 +191,7 @@ const SignUpForm = () => {
                             </button>
 
                             <button
+                                onClick={handleGithubSignIn}
                                 type="button"
                                 className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                             >
