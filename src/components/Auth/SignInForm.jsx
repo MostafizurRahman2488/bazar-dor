@@ -7,34 +7,36 @@ import { authClient } from "@/lib/auth-client";
 const SignInForm = () => {
     const router = useRouter();
 
+
     const onSubmit = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
+        const formData = Object.fromEntries(
+            new FormData(e.currentTarget)
+        );
 
-    const { email, password } = Object.fromEntries(formData);
+        const { email, password } = formData;
 
-    const { data, error } = await authClient.signIn.email({
-        email: email.trim(),
-        password,
-    });
-
-    if (error) {
-        console.error("Sign in error:", {
-            code: error.code,
-            message: error.message,
-            status: error.status,
+        const { data, error } = await authClient.signIn.email({
+            email: email.trim(),
+            password,
         });
 
-        alert("ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।");
-        return;
-    }
 
-    console.log("Sign in successful:", data);
+        if (error) {
+            console.log("Sign in failed:", error.message || "Invalid credentials");
 
-    router.push("/");
-    router.refresh();
-};
+            alert("ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।");
+            return;
+        }
+
+
+        console.log("Sign in successful:", data);
+
+        router.push("/");
+        router.refresh();
+    };
+
 
     return (
         <main className="min-h-screen bg-[#f0f5f0] px-4 py-10">
