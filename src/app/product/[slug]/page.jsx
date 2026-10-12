@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -10,6 +9,7 @@ import ProductSummary from "@/components/ProductDetails/ProductSummary";
 import PriceSummary from "@/components/ProductDetails/PriceSummary";
 import MarkerPrices from "@/components/ProductDetails/MarkerPrices";
 
+// Requirement 4: safely convert price values to numbers.
 function toNumber(value) {
   if (value === null || value === undefined || value === "") {
     return null;
@@ -19,6 +19,7 @@ function toNumber(value) {
   return Number.isFinite(number) && number >= 0 ? number : null;
 }
 
+// Requirement 4C: collect price information from different markets.
 function getMarketRows(product) {
   const rawMarkets =
     product.marketPrices ??
@@ -46,6 +47,7 @@ function getMarketRows(product) {
   }));
 }
 
+// Requirement 4B: calculate minimum, maximum and average price.
 function getPriceStats(product, markets) {
   const todayPrices = markets
     .map((market) => market.today)
@@ -56,33 +58,36 @@ function getPriceStats(product, markets) {
   const avg = toNumber(product.averagePrice ?? product.avgPrice);
 
   return {
-    min: min ?? (todayPrices.length
-      ? Math.min(...todayPrices)
-      : null),
-
-    max: max ?? (todayPrices.length
-      ? Math.max(...todayPrices)
-      : null),
-
-    avg: avg ?? (todayPrices.length
-      ? todayPrices.reduce((sum, price) => sum + price, 0) /
-        todayPrices.length
-      : toNumber(product.today)),
+    min: min ?? (
+      todayPrices.length ? Math.min(...todayPrices) : null
+    ),
+    max: max ?? (
+      todayPrices.length ? Math.max(...todayPrices) : null
+    ),
+    avg: avg ?? (
+      todayPrices.length
+        ? todayPrices.reduce((sum, price) => sum + price, 0) /
+          todayPrices.length
+        : toNumber(product.today)
+    ),
   };
 }
 
 export default async function ProductDetailsPage({ params }) {
   const { slug } = await params;
 
-  // Protect this route on the server.
+  // Requirement 4: protect this page; login is required.
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
   if (!session) {
-    redirect("/signin");
+    redirect(
+      `/signin?callbackURL=${encodeURIComponent(`/product/${slug}`)}`
+    );
   }
 
+  // Fetch product data from the existing service.
   const products = await getProducts();
 
   const product = products.find(
@@ -91,6 +96,7 @@ export default async function ProductDetailsPage({ params }) {
       String(item.id) === String(slug)
   );
 
+  // Invalid product slug -> 404 page.
   if (!product) {
     notFound();
   }
@@ -100,31 +106,34 @@ export default async function ProductDetailsPage({ params }) {
 
   const unitNames = {
     kg: "প্রতি কেজি",
+    kilogram: "প্রতি কেজি",
     litre: "প্রতি লিটার",
     liter: "প্রতি লিটার",
+    l: "প্রতি লিটার",
     piece: "প্রতি পিস",
+    pcs: "প্রতি পিস",
     dozen: "প্রতি ডজন",
   };
 
-  const unit =
-    unitNames[product.unit] ||
-    `প্রতি ${product.unit || "পিস"}`;
+  const rawUnit = String(product.unit || "পিস").toLowerCase();
+  const unit = unitNames[rawUnit] || `প্রতি ${product.unit || "পিস"}`;
 
   return (
-    <main className="min-h-screen bg-[#f5f8f5] px-4 py-8 sm:px-6 sm:py-12">
+    <main className="min-h-screen bg-[#f0f5f0] px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-6xl">
+        <nav aria-label="Breadcrumb" className="mb-5 text-sm text-gray-600">
+          <Link href="/" className="hover:text-green-700">
+            হোম
+          </Link>
+          <span className="mx-2">›</span>
+          <span>পণ্যের বিস্তারিত</span>
+        </nav>
 
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-green-800 transition hover:text-green-600"
-        >
-          <span aria-hidden="true">←</span>
-          হোমপেজে ফিরে যান
-        </Link>
-
-        <div className="mt-5 space-y-8">
+        <div className="space-y-6">
+          {/* Requirement 4A: emoji, title, summary, category and unit. */}
           <ProductSummary product={product} />
 
+          {/* Requirement 4B: minimum, maximum and average prices. */}
           <PriceSummary
             min={prices.min}
             max={prices.max}
@@ -132,15 +141,11 @@ export default async function ProductDetailsPage({ params }) {
             unit={unit}
           />
 
-          <MarkerPrices
-            markets={markets}
-            unit={unit}
-          />
+          {/* Requirement 4C: market-by-market prices. */}
+          <MarkerPrices markets={markets} unit={unit} />
         </div>
 
-        <p className="mt-8 text-center text-xs text-gray-500">
-          প্রদর্শিত দাম API-তে পাওয়া তথ্যের ওপর নির্ভরশীল।
-        </p>
+       
       </div>
     </main>
   );

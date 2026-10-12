@@ -1,11 +1,16 @@
-
 function formatPrice(value) {
-  if (value === null || value === undefined ||
-      value === "" || !Number.isFinite(Number(value))) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === "" ||
+    !Number.isFinite(Number(value))
+  ) {
     return "—";
   }
 
-  return Number(value).toLocaleString("bn-BD");
+  return Number(value).toLocaleString("bn-BD", {
+    maximumFractionDigits: 2,
+  });
 }
 
 const priceCards = [
@@ -32,19 +37,15 @@ const priceCards = [
   },
 ];
 
+// Requirement 4B: price summary cards.
 export default function PriceSummary({ min, max, avg, unit }) {
   const values = { min, max, avg };
 
   return (
     <section>
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-[#202820] sm:text-2xl">
-          আজকের দামের সারসংক্ষেপ
-        </h2>
-        <p className="mt-1 text-sm text-gray-500">
-          {unit} অনুযায়ী বাজারদরের তুলনা
-        </p>
-      </div>
+      <h2 className="mb-4 text-xl font-bold text-[#202820] sm:text-2xl">
+        দামের সারসংক্ষেপ
+      </h2>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {priceCards.map((card) => (
@@ -57,7 +58,9 @@ export default function PriceSummary({ min, max, avg, unit }) {
                 {card.label}
               </p>
 
-              <span className={`flex h-9 w-9 items-center justify-center rounded-xl text-xl font-bold ${card.bg} ${card.color}`}>
+              <span
+                className={`flex h-9 w-9 items-center justify-center rounded-xl text-xl font-bold ${card.bg} ${card.color}`}
+              >
                 {card.icon}
               </span>
             </div>
@@ -67,9 +70,7 @@ export default function PriceSummary({ min, max, avg, unit }) {
               <span className="ml-1 text-sm font-medium">টাকা</span>
             </p>
 
-            <p className="mt-2 text-xs text-gray-500">
-              {unit}
-            </p>
+            <p className="mt-2 text-xs text-gray-500">{unit}</p>
           </article>
         ))}
       </div>
