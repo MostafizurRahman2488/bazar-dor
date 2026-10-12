@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 import NavLinks from "./NavLinks";
-import { AuthButtons } from "./MobileMenu";
 import PriceTicker from "../Ticker/PriceTicker";
+import { AuthButtons } from "./MobileMenu";
 
 const Navbar = async () => {
   await connection();

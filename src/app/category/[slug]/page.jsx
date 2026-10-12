@@ -5,7 +5,7 @@ import { getProducts } from "@/services/productServices";
 import { getCategories } from "@/services/categoryServices";
 
 import CategoryHeader from "@/components/Category/CategoryHeader";
-import CategoryProductList from "@/components/Category/Category/CategoryProductList";
+import CategoryProductList from "@/components/Category/CategoryProductList";
 
 
 function normalize(value) {
@@ -112,9 +112,6 @@ export default async function CategoryDetailPage({ params }) {
       <section className="mt-8">
         {categoryProducts.length > 0 ? (
           <>
-            <h2 className="mb-5 text-xl font-bold text-[#202820] sm:text-2xl">
-              {category.nameBn ?? category.name} এর পণ্য
-            </h2>
 
             <CategoryProductList products={categoryProducts} />
           </>

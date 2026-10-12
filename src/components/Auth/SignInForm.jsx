@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
+
 const SignInForm = () => {
     const router = useRouter();
 
@@ -84,7 +85,7 @@ const SignInForm = () => {
                             id="password"
                             name="password"
                             type="password"
-                            placeholder="আপনার পাসওয়ার্ড দিন"
+                            placeholder="কমপক্ষে ৮ অক্ষর"
                             autoComplete="current-password"
                             required
                             className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2.5 text-sm outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-100"
