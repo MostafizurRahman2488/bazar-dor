@@ -1,74 +1,127 @@
 
-import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import { getProducts } from "@/services/productServices";
 import { getCategories } from "@/services/categoryServices";
 
 import CategoryHeader from "@/components/Category/CategoryHeader";
-import ProductGrid from "@/components/Product/ProductGrid";
+import CategoryProductList from "@/components/Category/Category/CategoryProductList";
+
 
 function normalize(value) {
-    return String(value ?? "")
-        .trim()
-        .toLowerCase();
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-");
+}
+
+function getCategoryValues(category) {
+  return [
+    category?.slug,
+    category?.id,
+    category?.name,
+    category?.nameBn,
+    category?.category,
+    category?.categorySlug,
+  ]
+    .filter((value) => value !== undefined && value !== null)
+    .map(normalize);
+}
+
+function productMatchesCategory(product, category) {
+  const categoryValues = getCategoryValues(category);
+
+  const productValues = [
+    product?.categorySlug,
+    product?.categoryNameBn,
+    product?.categoryName,
+    product?.categoryId,
+    typeof product?.category === "object"
+      ? product.category?.slug
+      : product?.category,
+    typeof product?.category === "object"
+      ? product.category?.nameBn
+      : null,
+    typeof product?.category === "object"
+      ? product.category?.name
+      : null,
+  ]
+    .filter((value) => value !== undefined && value !== null)
+    .map(normalize);
+
+  return productValues.some((value) =>
+    categoryValues.includes(value)
+  );
+}
+
+function EmptyCategory({ title = "এই ক্যাটাগরিতে কোনো পণ্য পাওয়া যায়নি" }) {
+  return (
+    <div className="rounded-3xl border border-dashed border-gray-300 bg-white px-5 py-16 text-center">
+      <div className="text-5xl" aria-hidden="true">🛒</div>
+
+      <h2 className="mt-4 text-xl font-bold text-[#202820]">
+        {title}
+      </h2>
+
+      <p className="mt-2 text-sm text-gray-500">
+        অন্য ক্যাটাগরি দেখুন অথবা হোম পেজে ফিরে যান।
+      </p>
+
+      <Link
+        href="/"
+        className="mt-6 inline-flex items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white transition hover:bg-green-800"
+      >
+        হোম পেজে ফিরে যান
+      </Link>
+    </div>
+  );
 }
 
 export default async function CategoryDetailPage({ params }) {
-    const { slug } = await params;
+  const { slug } = await params;
 
-    // ১. API থেকে category ও product নিয়ে আসছি
-    const [categories, products] = await Promise.all([
-        getCategories(),
-        getProducts(),
-    ]);
-    console.log(categories);
-    
-    
+  const [categories, products] = await Promise.all([
+    getCategories(),
+    getProducts(),
+  ]);
 
-    // ২. URL-এর slug অনুযায়ী category খুঁজছি
-    const category = categories.find(
-        (item) => normalize(item.slug) === normalize(slug)
-    );
+  const category = categories.find(
+    (item) => normalize(item.slug) === normalize(slug)
+  );
 
-    // ৩. Category না পাওয়া গেলে 404 page দেখাবে
-    if (!category) {
-        notFound();
-    }
-
-    // ৪. শুধু নির্বাচিত category-এর product রাখছি
-    const categoryProducts = products.filter((product) => {
-        const productCategory = normalize(product.category);
-        const productCategorySlug = normalize(product.categorySlug);
-        const productCategoryName = normalize(product.categoryNameBn);
-
-        return (
-            productCategory === normalize(category.slug) ||
-            productCategorySlug === normalize(category.slug) ||
-            productCategory === normalize(category.name) ||
-            productCategory === normalize(category.nameBn) ||
-            productCategoryName === normalize(category.nameBn)
-        );
-    });
-
-    // ৫. Category title ও product card দেখাচ্ছি
+  // Invalid category slug: show a helpful empty state.
+  if (!category) {
     return (
-        <main className="mx-auto min-h-screen max-w-7xl px-5 py-10">
-            <CategoryHeader category={category} />
-
-            <section className="mt-8">
-                <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-[#202820]">
-                        {category.nameBn ?? category.name} এর পণ্য
-                    </h2>
-
-                    <p className="mt-2 text-sm text-gray-500">
-                        মোট {categoryProducts.length.toLocaleString("bn-BD")}টি
-                        পণ্য পাওয়া গেছে
-                    </p>
-                </div>
-
-                <ProductGrid products={categoryProducts} />
-            </section>
-        </main>
+      <main className="mx-auto min-h-screen max-w-7xl px-5 py-10">
+        <EmptyCategory title="ক্যাটাগরিটি খুঁজে পাওয়া যায়নি" />
+      </main>
     );
+  }
+
+  const categoryProducts = products.filter((product) =>
+    productMatchesCategory(product, category)
+  );
+
+  return (
+    <main className="mx-auto min-h-screen max-w-7xl px-5 py-8 sm:py-10">
+      <CategoryHeader
+        category={category}
+        productCount={categoryProducts.length}
+      />
+
+      <section className="mt-8">
+        {categoryProducts.length > 0 ? (
+          <>
+            <h2 className="mb-5 text-xl font-bold text-[#202820] sm:text-2xl">
+              {category.nameBn ?? category.name} এর পণ্য
+            </h2>
+
+            <CategoryProductList products={categoryProducts} />
+          </>
+        ) : (
+          <EmptyCategory />
+        )}
+      </section>
+    </main>
+  );
 }

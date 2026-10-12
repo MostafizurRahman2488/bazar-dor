@@ -1,26 +1,27 @@
 
 const CATEGORIES_API =
-  "https://api.api-store.workers.dev/api/bazardor/products";
+  "https://api.api-store.workers.dev/api/bazardor/categories";
 
 export async function getCategories() {
-  try {
-    const res = await fetch(CATEGORIES_API, {
-      next: { revalidate: 300 },
-    });
+  const response = await fetch(CATEGORIES_API, {
+    next: { revalidate: 300 },
+  });
 
-    if (!res.ok) {
-      return [];
-    }
-
-    const result = await res.json();
-
-    const categories = Array.isArray(result)
-      ? result
-      : result?.categories ?? result?.data ?? [];
-
-    return Array.isArray(categories) ? categories : [];
-  } catch (error) {
-    console.error("Category fetch error:", error);
-    return [];
+  if (!response.ok) {
+    throw new Error(
+      `Categories fetch failed: ${response.status}`
+    );
   }
+
+  const result = await response.json();
+
+  const categories = Array.isArray(result)
+    ? result
+    : result?.categories ?? result?.data ?? [];
+
+  if (!Array.isArray(categories)) {
+    throw new Error("Invalid categories API response");
+  }
+
+  return categories;
 }
