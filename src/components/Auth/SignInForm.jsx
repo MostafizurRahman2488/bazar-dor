@@ -40,8 +40,7 @@ const SignInForm = () => {
             if (error) {
                 console.error("Email sign in error:", error);
                 toast.error(
-                    error.message ||
-                    "ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।"
+                    error.message || "ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।"
                 );
                 return;
             }
@@ -52,7 +51,6 @@ const SignInForm = () => {
             }
 
             toast.success("সফলভাবে সাইন ইন হয়েছে!");
-
             router.replace("/");
             router.refresh();
         } catch (error) {
@@ -63,40 +61,44 @@ const SignInForm = () => {
         }
     };
 
-    // Google and GitHub sign in
+    // Google and GitHub OAuth sign in
     const handleSocialSignIn = async (provider) => {
         if (loading || socialLoading) return;
 
         setSocialLoading(provider);
 
         try {
-            const result = await authClient.signIn.social({
+            const { data, error } = await authClient.signIn.social({
                 provider,
                 callbackURL: `${window.location.origin}/`,
                 errorCallbackURL: `${window.location.origin}/signin`,
             });
 
-            if (result?.error) {
-                console.error(
-                    `${provider} sign in error:`,
-                    result.error
-                );
-
+            if (error) {
+                console.error(`${provider} OAuth error:`, error);
                 toast.error(
-                    result.error.message ||
-                    `${provider === "google" ? "Google" : "GitHub"} দিয়ে লগইন করা যায়নি।`
+                    error.message ||
+                    `${provider === "github" ? "GitHub" : "Google"} দিয়ে লগইন করা যায়নি।`
                 );
-
                 setSocialLoading("");
+                return;
             }
 
-            // Successful OAuth normally redirects the browser.
-            // Do not clear loading before the redirect starts.
+            // Better Auth normally redirects automatically.
+            // Keep a fallback if it returns an authorization URL.
+            if (data?.url) {
+                window.location.assign(data.url);
+                return;
+            }
+
+            // If no redirect URL is returned, do not leave
+            // the button stuck in its loading state.
+            setSocialLoading("");
         } catch (error) {
-            console.error("Social sign in error:", error);
+            console.error(`${provider} OAuth failed:`, error);
 
             toast.error(
-                "Social login ব্যর্থ হয়েছে। Console-এর error দেখুন।"
+                `${provider === "github" ? "GitHub" : "Google"} লগইন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।`
             );
 
             setSocialLoading("");
@@ -224,3 +226,4 @@ const SignInForm = () => {
 };
 
 export default SignInForm;
+

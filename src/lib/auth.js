@@ -1,4 +1,4 @@
-// src/lib/auth.js
+
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
@@ -9,7 +9,14 @@ if (!mongoUrl) {
   throw new Error("MONGODB_URL is missing from .env.local");
 }
 
+if (!process.env.BETTER_AUTH_SECRET) {
+  throw new Error(
+    "BETTER_AUTH_SECRET is missing from .env.local"
+  );
+}
+
 const globalForMongo = globalThis;
+
 const client =
   globalForMongo.mongoClient ?? new MongoClient(mongoUrl);
 
@@ -34,26 +41,23 @@ const baseURL =
   process.env.NEXT_PUBLIC_APP_URL ||
   "http://localhost:3000";
 
-if (!process.env.BETTER_AUTH_SECRET) {
-  throw new Error(
-    "BETTER_AUTH_SECRET is missing. Add a secure secret to .env.local."
-  );
-}
+const githubClientId =
+  process.env.BETTER_AUTH_GITHUB_CLIENT_ID;
 
+const githubClientSecret =
+  process.env.BETTER_AUTH_GITHUB_SECRET;
 
-const googleConfigured = Boolean(
-  process.env.BETTER_AUTH_GOOGLE_CLIENT_ID &&
-  process.env.BETTER_AUTH_GOOGLE_SECRET
-);
+const googleClientId =
+  process.env.BETTER_AUTH_GOOGLE_CLIENT_ID;
 
-const githubConfigured = Boolean(
-  process.env.BETTER_AUTH_GITHUB_CLIENT_ID &&
-  process.env.BETTER_AUTH_GITHUB_SECRET
-);
+const googleClientSecret =
+  process.env.BETTER_AUTH_GOOGLE_SECRET;
 
 export const auth = betterAuth({
   appName: "Bazar Dor",
+
   secret: process.env.BETTER_AUTH_SECRET,
+
   baseURL,
 
   trustedOrigins: [
@@ -61,7 +65,9 @@ export const auth = betterAuth({
     process.env.NEXT_PUBLIC_APP_URL,
   ].filter(Boolean),
 
-  database: mongodbAdapter(db, { client }),
+  database: mongodbAdapter(db, {
+    client,
+  }),
 
   emailAndPassword: {
     enabled: true,
@@ -69,19 +75,23 @@ export const auth = betterAuth({
   },
 
   socialProviders: {
-    ...(googleConfigured && {
-      google: {
-        clientId: process.env.BETTER_AUTH_GOOGLE_CLIENT_ID,
-        clientSecret: process.env.BETTER_AUTH_GOOGLE_SECRET,
-      },
-    }),
+    ...(githubClientId && githubClientSecret
+      ? {
+        github: {
+          clientId: githubClientId,
+          clientSecret: githubClientSecret,
+        },
+      }
+      : {}),
 
-    ...(githubConfigured && {
-      github: {
-        clientId: process.env.BETTER_AUTH_GITHUB_CLIENT_ID,
-        clientSecret: process.env.BETTER_AUTH_GITHUB_SECRET,
-      },
-    }),
+    ...(googleClientId && googleClientSecret
+      ? {
+        google: {
+          clientId: googleClientId,
+          clientSecret: googleClientSecret,
+        },
+      }
+      : {}),
   },
 
   account: {
@@ -93,3 +103,4 @@ export const auth = betterAuth({
 });
 
 export { client, connectPromise };
+
