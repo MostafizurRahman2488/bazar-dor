@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -12,6 +13,7 @@ const SignUpForm = () => {
     const [loading, setLoading] = useState(false);
     const [socialLoading, setSocialLoading] = useState("");
 
+    // Email and password signup
     const onSubmit = async (e) => {
         e.preventDefault();
 
@@ -48,9 +50,12 @@ const SignUpForm = () => {
                 name,
                 email,
                 password,
+                callbackURL: "/",
             });
 
             if (error) {
+                console.error("Signup error:", error);
+
                 const errorMessage = String(
                     error.message || ""
                 ).toLowerCase();
@@ -59,20 +64,18 @@ const SignUpForm = () => {
                     error.code || ""
                 ).toUpperCase();
 
-                const isExistingUser =
+                if (
                     errorCode.includes("USER_ALREADY_EXISTS") ||
                     errorMessage.includes("already exists") ||
-                    errorMessage.includes("already registered");
-
-                if (isExistingUser) {
+                    errorMessage.includes("already registered")
+                ) {
                     toast.error(
                         "এই ইমেইল দিয়ে আগে থেকেই অ্যাকাউন্ট আছে।"
                     );
                 } else {
-                    console.error("Signup error:", error);
-
                     toast.error(
-                        error.message || "সাইন আপ ব্যর্থ হয়েছে। আবার চেষ্টা করুন।"
+                        error.message ||
+                        "সাইন আপ ব্যর্থ হয়েছে। আবার চেষ্টা করুন।"
                     );
                 }
 
@@ -80,13 +83,16 @@ const SignUpForm = () => {
             }
 
             if (!data) {
-                toast.error("অ্যাকাউন্ট তৈরি হয়নি। আবার চেষ্টা করুন।");
+                toast.error(
+                    "অ্যাকাউন্ট তৈরি হয়নি। আবার চেষ্টা করুন।"
+                );
                 return;
             }
 
-            toast.success("অ্যাকাউন্ট তৈরি হয়েছে! এবার সাইন ইন করুন।");
+            toast.success("অ্যাকাউন্ট তৈরি হয়েছে!");
 
-            router.replace("/signin");
+            router.replace("/");
+            router.refresh();
         } catch (error) {
             console.error("Signup error:", error);
             toast.error("সাইন আপ করা যায়নি। আবার চেষ্টা করুন।");
@@ -95,30 +101,47 @@ const SignUpForm = () => {
         }
     };
 
+    // Google and GitHub OAuth
+
+    // Google and GitHub OAuth
     const handleSocialSignIn = async (provider) => {
         if (loading || socialLoading) return;
 
         setSocialLoading(provider);
 
         try {
-            const { error } = await authClient.signIn.social({
+            const { data, error } = await authClient.signIn.social({
                 provider,
                 callbackURL: "/",
+                errorCallbackURL: "/signup",
             });
 
             if (error) {
+                console.error(`${provider} OAuth error: `, error);
+
                 toast.error(
-                    `${provider === "google" ? "Google" : "GitHub"} দিয়ে চালিয়ে যাওয়া যায়নি।`
+                    error.message ||
+                    `${provider} দিয়ে লগইন করা যায়নি।`
                 );
 
                 setSocialLoading("");
+                return;
             }
+
+            // OAuth redirect শুরু হলে ব্রাউজার provider-এর
+            // login page-এ চলে যাবে।
+            console.log(`${provider} OAuth initiated: `, data);
         } catch (error) {
-            console.error("Social login error:", error);
-            toast.error("Social login ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
+            console.error(`${provider} OAuth exception: `, error);
+
+            toast.error(
+                `${provider} login ব্যর্থ হয়েছে। আবার চেষ্টা করুন।`
+            );
+
             setSocialLoading("");
         }
     };
+
 
     const isBusy = loading || Boolean(socialLoading);
 
@@ -230,7 +253,9 @@ const SignUpForm = () => {
 
                     <div className="flex items-center gap-3 py-1">
                         <div className="h-px flex-1 bg-gray-300" />
-                        <span className="text-sm text-gray-500">অথবা</span>
+                        <span className="text-sm text-gray-500">
+                            অথবা
+                        </span>
                         <div className="h-px flex-1 bg-gray-300" />
                     </div>
 
@@ -238,22 +263,26 @@ const SignUpForm = () => {
                         <button
                             type="button"
                             disabled={isBusy}
-                            onClick={() => handleSocialSignIn("google")}
+                            onClick={() =>
+                                handleSocialSignIn("google")
+                            }
                             className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
                         >
                             {socialLoading === "google"
-                                ? "অপেক্ষা করুন..."
+                                ? "Google-এ সংযোগ হচ্ছে..."
                                 : "Google দিয়ে সাইন আপ"}
                         </button>
 
                         <button
                             type="button"
                             disabled={isBusy}
-                            onClick={() => handleSocialSignIn("github")}
+                            onClick={() =>
+                                handleSocialSignIn("github")
+                            }
                             className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
                         >
                             {socialLoading === "github"
-                                ? "অপেক্ষা করুন..."
+                                ? "GitHub-এ সংযোগ হচ্ছে..."
                                 : "GitHub দিয়ে সাইন আপ"}
                         </button>
                     </div>

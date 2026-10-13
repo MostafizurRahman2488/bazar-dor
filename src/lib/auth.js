@@ -1,4 +1,4 @@
-
+// src/lib/auth.js
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
@@ -10,7 +10,6 @@ if (!mongoUrl) {
 }
 
 const globalForMongo = globalThis;
-
 const client =
   globalForMongo.mongoClient ?? new MongoClient(mongoUrl);
 
@@ -18,25 +17,41 @@ if (!globalForMongo.mongoClient) {
   globalForMongo.mongoClient = client;
 }
 
-// Reuse the connection promise during development.
 const connectPromise =
-  globalForMongo.mongoConnectPromise ??
-  client.connect();
+  globalForMongo.mongoConnectPromise ?? client.connect();
 
 if (!globalForMongo.mongoConnectPromise) {
   globalForMongo.mongoConnectPromise = connectPromise;
 }
 
-const db = client.db("bazar-dor");
+const db = client.db(
+  process.env.MONGODB_DATABASE || "bazar-dor"
+);
+
+const baseURL =
+  process.env.BETTER_AUTH_URL || "http://localhost:3000";
+
+const googleConfigured = Boolean(
+  process.env.BETTER_AUTH_GOOGLE_CLIENT_ID &&
+  process.env.BETTER_AUTH_GOOGLE_SECRET
+);
+
+const githubConfigured = Boolean(
+  process.env.BETTER_AUTH_GITHUB_CLIENT_ID &&
+  process.env.BETTER_AUTH_GITHUB_SECRET
+);
 
 export const auth = betterAuth({
+  appName: "Bazar Dor",
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL,
 
-  database: mongodbAdapter(db, {
-    client,
-  }),
+  trustedOrigins: [
+    baseURL,
+    process.env.NEXT_PUBLIC_APP_URL,
+  ].filter(Boolean),
 
+  database: mongodbAdapter(db, { client }),
 
   emailAndPassword: {
     enabled: true,
@@ -44,20 +59,27 @@ export const auth = betterAuth({
   },
 
   socialProviders: {
-    google: {
-      clientId: process.env.BETTER_AUTH_GOOGLE_CLIENT_ID,
-      clientSecret: process.env.BETTER_AUTH_GOOGLE_SECRET,
-    },
-    github: {
-      clientId: process.env.BETTER_AUTH_GITHUB_CLIENT_ID,
-      clientSecret: process.env.BETTER_AUTH_GITHUB_SECRET,
+    ...(googleConfigured && {
+      google: {
+        clientId: process.env.BETTER_AUTH_GOOGLE_CLIENT_ID,
+        clientSecret: process.env.BETTER_AUTH_GOOGLE_SECRET,
+      },
+    }),
+
+    ...(githubConfigured && {
+      github: {
+        clientId: process.env.BETTER_AUTH_GITHUB_CLIENT_ID,
+        clientSecret: process.env.BETTER_AUTH_GITHUB_SECRET,
+      },
+    }),
+  },
+
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google", "github"],
     },
   },
-   account: {
-        accountLinking: {
-            trustedProviders: ["google", "github"],
-        },
-    },
 });
 
 export { client, connectPromise };

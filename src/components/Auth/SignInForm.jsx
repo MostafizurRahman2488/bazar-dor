@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -12,6 +13,7 @@ const SignInForm = () => {
     const [loading, setLoading] = useState(false);
     const [socialLoading, setSocialLoading] = useState("");
 
+    // Email and password sign in
     const onSubmit = async (e) => {
         e.preventDefault();
 
@@ -32,10 +34,15 @@ const SignInForm = () => {
             const { data, error } = await authClient.signIn.email({
                 email,
                 password,
+                callbackURL: "/",
             });
 
             if (error) {
-                toast.error("ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।");
+                console.error("Email sign in error:", error);
+                toast.error(
+                    error.message ||
+                    "ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।"
+                );
                 return;
             }
 
@@ -56,26 +63,42 @@ const SignInForm = () => {
         }
     };
 
+    // Google and GitHub sign in
     const handleSocialSignIn = async (provider) => {
         if (loading || socialLoading) return;
 
         setSocialLoading(provider);
 
         try {
-            const { error } = await authClient.signIn.social({
+            const result = await authClient.signIn.social({
                 provider,
-                callbackURL: "/",
+                callbackURL: `${window.location.origin}/`,
+                errorCallbackURL: `${window.location.origin}/signin`,
             });
 
-            if (error) {
-                toast.error(
-                    `${provider === "google" ? "Google" : "GitHub"} দিয়ে সাইন ইন করা যায়নি।`
+            if (result?.error) {
+                console.error(
+                    `${provider} sign in error:`,
+                    result.error
                 );
+
+                toast.error(
+                    result.error.message ||
+                    `${provider === "google" ? "Google" : "GitHub"} দিয়ে লগইন করা যায়নি।`
+                );
+
                 setSocialLoading("");
             }
+
+            // Successful OAuth normally redirects the browser.
+            // Do not clear loading before the redirect starts.
         } catch (error) {
             console.error("Social sign in error:", error);
-            toast.error("Social login ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
+
+            toast.error(
+                "Social login ব্যর্থ হয়েছে। Console-এর error দেখুন।"
+            );
+
             setSocialLoading("");
         }
     };
@@ -146,7 +169,9 @@ const SignInForm = () => {
 
                     <div className="flex items-center gap-3 py-1">
                         <div className="h-px flex-1 bg-gray-300" />
-                        <span className="text-sm text-gray-500">অথবা</span>
+                        <span className="text-sm text-gray-500">
+                            অথবা
+                        </span>
                         <div className="h-px flex-1 bg-gray-300" />
                     </div>
 
@@ -158,7 +183,7 @@ const SignInForm = () => {
                             className="rounded-lg border border-gray-200 px-2 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
                         >
                             {socialLoading === "google"
-                                ? "অপেক্ষা করুন..."
+                                ? "Google-এ সংযোগ হচ্ছে..."
                                 : "Google দিয়ে চালিয়ে যান"}
                         </button>
 
@@ -169,7 +194,7 @@ const SignInForm = () => {
                             className="rounded-lg border border-gray-200 px-2 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
                         >
                             {socialLoading === "github"
-                                ? "অপেক্ষা করুন..."
+                                ? "GitHub-এ সংযোগ হচ্ছে..."
                                 : "GitHub দিয়ে চালিয়ে যান"}
                         </button>
                     </div>
