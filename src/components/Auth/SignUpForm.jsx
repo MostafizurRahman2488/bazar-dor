@@ -102,8 +102,6 @@ const SignUpForm = () => {
     };
 
     // Google and GitHub OAuth
-
-    // Google and GitHub OAuth
     const handleSocialSignIn = async (provider) => {
         if (loading || socialLoading) return;
 
@@ -112,12 +110,12 @@ const SignUpForm = () => {
         try {
             const { data, error } = await authClient.signIn.social({
                 provider,
-                callbackURL: "/",
-                errorCallbackURL: "/signup",
+                callbackURL: `${window.location.origin}/`,
+                errorCallbackURL: `${window.location.origin}/signup`,
             });
 
             if (error) {
-                console.error(`${provider} OAuth error: `, error);
+                console.error(`${provider} OAuth error:`, error);
 
                 toast.error(
                     error.message ||
@@ -128,20 +126,26 @@ const SignUpForm = () => {
                 return;
             }
 
-            // OAuth redirect শুরু হলে ব্রাউজার provider-এর
-            // login page-এ চলে যাবে।
-            console.log(`${provider} OAuth initiated: `, data);
+            // Redirect to the provider if an OAuth URL is returned.
+            if (data?.url) {
+                window.location.assign(data.url);
+                return;
+            }
+
+            // The auth client may already have started the redirect.
+            console.log(`${provider} OAuth initiated:`, data);
+            setSocialLoading("");
         } catch (error) {
-            console.error(`${provider} OAuth exception: `, error);
+            console.error(`${provider} OAuth exception:`, error);
 
             toast.error(
+                error?.message ||
                 `${provider} login ব্যর্থ হয়েছে। আবার চেষ্টা করুন।`
             );
 
             setSocialLoading("");
         }
     };
-
 
     const isBusy = loading || Boolean(socialLoading);
 
@@ -263,9 +267,7 @@ const SignUpForm = () => {
                         <button
                             type="button"
                             disabled={isBusy}
-                            onClick={() =>
-                                handleSocialSignIn("google")
-                            }
+                            onClick={() => handleSocialSignIn("google")}
                             className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
                         >
                             {socialLoading === "google"
@@ -276,9 +278,7 @@ const SignUpForm = () => {
                         <button
                             type="button"
                             disabled={isBusy}
-                            onClick={() =>
-                                handleSocialSignIn("github")
-                            }
+                            onClick={() => handleSocialSignIn("github")}
                             className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
                         >
                             {socialLoading === "github"
@@ -312,3 +312,4 @@ const SignUpForm = () => {
 };
 
 export default SignUpForm;
+

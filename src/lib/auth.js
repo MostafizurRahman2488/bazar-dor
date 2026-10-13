@@ -29,7 +29,17 @@ const db = client.db(
 );
 
 const baseURL =
-  process.env.BETTER_AUTH_URL || "http://localhost:3000";
+  process.env.BETTER_AUTH_URL ||
+  process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "http://localhost:3000";
+
+if (!process.env.BETTER_AUTH_SECRET) {
+  throw new Error(
+    "BETTER_AUTH_SECRET is missing. Add a secure secret to .env.local."
+  );
+}
+
 
 const googleConfigured = Boolean(
   process.env.BETTER_AUTH_GOOGLE_CLIENT_ID &&
