@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 
 const SignInForm = () => {
@@ -25,17 +26,17 @@ const SignInForm = () => {
 
 
         if (error) {
-            console.log("Sign in failed:", error.message || "Invalid credentials");
-
-            alert("ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।");
+            toast.error("ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।");
             return;
         }
 
+        toast.success("সফলভাবে সাইন ইন হয়েছে!");
+        router.push("/");
+        router.refresh();
 
         console.log("Sign in successful:", data);
 
-        router.push("/");
-        router.refresh();
+        router.push("/signin");
     };
 
 
@@ -92,11 +93,8 @@ const SignInForm = () => {
                         />
                     </div>
 
-                    <button
-                        type="submit"
-                        className="w-full rounded-lg bg-green-700 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-green-800 active:scale-[0.99]"
-                    >
-                        সাইন ইন
+                    <button type="submit" disabled={loading}>
+                        {loading ? "অপেক্ষা করুন..." : "সাইন ইন"}
                     </button>
 
                     <div className="flex items-center gap-3 py-1">

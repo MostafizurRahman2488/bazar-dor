@@ -3,6 +3,7 @@ import "./globals.css";
 
 import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/Footer/Footer";
+import { Toaster } from "react-hot-toast";
 
 const hindSiliguri = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -26,6 +27,7 @@ export default function RootLayout({ children }) {
     >
       <body className="flex min-h-screen flex-col bg-[#F0F5F0]">
         <Navbar />
+        <Toaster position="top-center" />
         <main className="flex-1">{children}</main>
         <Footer />
       </body>

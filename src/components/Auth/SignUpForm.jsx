@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient, signIn } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 
 const SignUpForm = () => {
@@ -35,21 +36,13 @@ const SignUpForm = () => {
         });
 
         if (error) {
-            const code = error.code || "";
-            const message = error.message || "";
-
-            if (
-                code.includes("USER_ALREADY_EXISTS") ||
-                message.toLowerCase().includes("user already exists")
-            ) {
-                alert("এই ইমেইল দিয়ে অ্যাকাউন্ট আগে থেকেই আছে। Sign in করুন।");
-                router.replace("/signin");
-                return;
-            }
-
-            alert(message || "সাইন আপ ব্যর্থ হয়েছে।");
+            toast.error("ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।");
             return;
         }
+
+        toast.success("সফলভাবে সাইন ইন হয়েছে!");
+        router.push("/");
+        router.refresh();
 
         router.push("/");
         router.refresh();
