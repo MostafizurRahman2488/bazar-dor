@@ -62,48 +62,61 @@ const SignInForm = () => {
     };
 
     // Google and GitHub OAuth sign in
+
+
+
     const handleSocialSignIn = async (provider) => {
         if (loading || socialLoading) return;
 
         setSocialLoading(provider);
 
         try {
-            const { data, error } = await authClient.signIn.social({
+            const result = await authClient.signIn.social({
                 provider,
                 callbackURL: `${window.location.origin}/`,
                 errorCallbackURL: `${window.location.origin}/signin`,
+                disableRedirect: true,
             });
 
-            if (error) {
-                console.error(`${provider} OAuth error:`, error);
+            console.log(`${provider} sign-in response:`, result);
+
+            if (result?.error) {
+                console.error("Social login error:", result.error);
+
                 toast.error(
-                    error.message ||
-                    `${provider === "github" ? "GitHub" : "Google"} দিয়ে লগইন করা যায়নি।`
+                    result.error.message ||
+                    `${provider} login ব্যর্থ হয়েছে।`
                 );
-                setSocialLoading("");
                 return;
             }
 
-            // Better Auth normally redirects automatically.
-            // Keep a fallback if it returns an authorization URL.
-            if (data?.url) {
-                window.location.assign(data.url);
+            const authorizationUrl =
+                result?.data?.url || result?.url;
+
+            if (authorizationUrl) {
+                window.location.href = authorizationUrl;
                 return;
             }
-
-            // If no redirect URL is returned, do not leave
-            // the button stuck in its loading state.
-            setSocialLoading("");
-        } catch (error) {
-            console.error(`${provider} OAuth failed:`, error);
 
             toast.error(
-                `${provider === "github" ? "GitHub" : "Google"} লগইন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।`
+                "Login URL পাওয়া যায়নি। Console ও Network পরীক্ষা করুন।"
             );
 
+            console.error(
+                "No authorization URL in response:",
+                result
+            );
+        } catch (error) {
+            console.error("Social login exception:", error);
+
+            toast.error(
+                error?.message || "Login শুরু করা যায়নি।"
+            );
+        } finally {
             setSocialLoading("");
         }
     };
+
 
     const isBusy = loading || Boolean(socialLoading);
 

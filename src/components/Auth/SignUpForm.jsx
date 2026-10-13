@@ -102,50 +102,50 @@ const SignUpForm = () => {
     };
 
     // Google and GitHub OAuth
+
     const handleSocialSignIn = async (provider) => {
         if (loading || socialLoading) return;
 
         setSocialLoading(provider);
 
         try {
-            const { data, error } = await authClient.signIn.social({
+            const result = await authClient.signIn.social({
                 provider,
                 callbackURL: `${window.location.origin}/`,
                 errorCallbackURL: `${window.location.origin}/signup`,
+                disableRedirect: true,
             });
 
-            if (error) {
-                console.error(`${provider} OAuth error:`, error);
-
+            if (result?.error) {
+                console.error(`${provider} OAuth error:`, result.error);
                 toast.error(
-                    error.message ||
+                    result.error.message ||
                     `${provider} দিয়ে লগইন করা যায়নি।`
                 );
-
-                setSocialLoading("");
                 return;
             }
 
-            // Redirect to the provider if an OAuth URL is returned.
-            if (data?.url) {
-                window.location.assign(data.url);
+            const url = result?.data?.url;
+
+            if (url) {
+                window.location.assign(url);
                 return;
             }
 
-            // The auth client may already have started the redirect.
-            console.log(`${provider} OAuth initiated:`, data);
-            setSocialLoading("");
-        } catch (error) {
-            console.error(`${provider} OAuth exception:`, error);
-
+            console.error("OAuth response:", result);
             toast.error(
-                error?.message ||
-                `${provider} login ব্যর্থ হয়েছে। আবার চেষ্টা করুন।`
+                "Authentication URL পাওয়া যায়নি। GitHub configuration পরীক্ষা করুন।"
             );
-
+        } catch (error) {
+            console.error(`${provider} OAuth failed:`, error);
+            toast.error(
+                error?.message || "Social login শুরু করা যায়নি।"
+            );
+        } finally {
             setSocialLoading("");
         }
     };
+   
 
     const isBusy = loading || Boolean(socialLoading);
 
