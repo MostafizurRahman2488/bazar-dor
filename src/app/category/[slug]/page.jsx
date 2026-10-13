@@ -85,10 +85,11 @@ export default async function CategoryDetailPage({ params }) {
     getProducts(),
   ]);
 
-  const category = categories.find(
-    (item) => normalize(item.slug) === normalize(slug)
-  );
+  const requestedSlug = normalize(slug);
 
+  const category = categories.find((item) =>
+    getCategoryValues(item).includes(requestedSlug)
+  );
   // Invalid category slug: show a helpful empty state.
   if (!category) {
     return (

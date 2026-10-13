@@ -45,7 +45,7 @@ function getChangeInfo(change) {
     if (direction === "up") {
         return {
             icon: "▲",
-            color: "text-red-600",
+            color: "text-green-600",
             label: `${formatPrice(percentage)}%`,
         };
     }
@@ -53,7 +53,7 @@ function getChangeInfo(change) {
     if (direction === "down") {
         return {
             icon: "▼",
-            color: "text-green-600",
+            color: "text-red-600",
             label: `${formatPrice(percentage)}%`,
         };
     }
