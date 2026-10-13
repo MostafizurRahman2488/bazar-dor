@@ -6,22 +6,34 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 export function AuthButtons() {
     const { data: session, isPending } = useSession();
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
 
+
     const handleSignOut = async () => {
         try {
-            await signOut();
+            const { error } = await signOut();
+
+            if (error) {
+                toast.error(error.message || "সাইন আউট করা যায়নি।");
+                return;
+            }
+
+            toast.success("সফলভাবে সাইন আউট হয়েছে!");
+
             setIsOpen(false);
-            router.push("/");
+            router.replace("/");
             router.refresh();
         } catch (error) {
             console.error("Sign out failed:", error);
+            toast.error("সাইন আউট করা যায়নি। আবার চেষ্টা করুন।");
         }
     };
+
 
     if (isPending) {
         return (
