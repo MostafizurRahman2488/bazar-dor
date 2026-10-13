@@ -85,7 +85,12 @@ const PriceTicker = async () => {
             aria-label="আজকের বাজার দর"
             className="w-full overflow-hidden border border-[#e5ece7] bg-[#fafcfb]"
         >
-            <MarqueeText direction="right">
+            <MarqueeText
+                direction="right"
+                duration={35}
+                pauseOnHover={false}
+                playOnlyInView={false}
+            >
                 <div className="flex w-max items-center">
                     {products.map((product, index) => {
                         const direction = product.change?.dir;

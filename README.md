@@ -61,7 +61,7 @@ Create a `.env.local` file in the root directory and add the required environmen
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in our browser.
 
 ## 🎯 Project Goal
 
