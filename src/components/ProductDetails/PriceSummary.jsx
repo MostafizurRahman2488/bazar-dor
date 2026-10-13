@@ -1,3 +1,4 @@
+
 function formatPrice(value) {
   if (
     value === null ||
@@ -37,9 +38,67 @@ const priceCards = [
   },
 ];
 
-// Requirement 4B: price summary cards.
-export default function PriceSummary({ min, max, avg, unit }) {
+export default function PriceSummary({ product }) {
+  if (!product) {
+    return null;
+  }
+
+  // API-এর markets array থেকে সব বাজারের min/max বের করা
+  const markets = Array.isArray(product.markets)
+    ? product.markets
+    : [];
+
+  const minPrices = markets
+    .map((market) => Number(market.min))
+    .filter(Number.isFinite);
+
+  const maxPrices = markets
+    .map((market) => Number(market.max))
+    .filter(Number.isFinite);
+
+  const min =
+    minPrices.length > 0
+      ? Math.min(...minPrices)
+      : product.today ?? null;
+
+  const max =
+    maxPrices.length > 0
+      ? Math.max(...maxPrices)
+      : product.today ?? null;
+
+  // প্রতিটি বাজারের min ও max-এর মধ্যবিন্দু থেকে আনুমানিক গড়
+  const averages = markets
+    .filter(
+      (market) =>
+        Number.isFinite(Number(market.min)) &&
+        Number.isFinite(Number(market.max))
+    )
+    .map(
+      (market) =>
+        (Number(market.min) + Number(market.max)) / 2
+    );
+
+  const avg =
+    averages.length > 0
+      ? averages.reduce((total, price) => total + price, 0) /
+        averages.length
+      : product.today ?? null;
+
   const values = { min, max, avg };
+
+  const unitNames = {
+    kg: "প্রতি কেজি",
+    kilogram: "প্রতি কেজি",
+    litre: "প্রতি লিটার",
+    liter: "প্রতি লিটার",
+    l: "প্রতি লিটার",
+    piece: "প্রতি পিস",
+    pcs: "প্রতি পিস",
+    dozen: "প্রতি ডজন",
+  };
+
+  const rawUnit = String(product.unit || "kg").toLowerCase();
+  const unit = unitNames[rawUnit] || `প্রতি ${rawUnit}`;
 
   return (
     <section>
@@ -58,11 +117,7 @@ export default function PriceSummary({ min, max, avg, unit }) {
                 {card.label}
               </p>
 
-              <span
-                className={`flex h-9 w-9 items-center justify-center rounded-xl text-xl font-bold ${card.bg} ${card.color}`}
-              >
-                {card.icon}
-              </span>
+              
             </div>
 
             <p className={`mt-4 text-2xl font-extrabold ${card.color}`}>
@@ -70,7 +125,9 @@ export default function PriceSummary({ min, max, avg, unit }) {
               <span className="ml-1 text-sm font-medium">টাকা</span>
             </p>
 
-            <p className="mt-2 text-xs text-gray-500">{unit}</p>
+            <p className="mt-2 text-xs text-gray-500">
+              {unit}
+            </p>
           </article>
         ))}
       </div>

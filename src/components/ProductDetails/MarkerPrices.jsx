@@ -16,35 +16,30 @@ function formatPrice(value) {
 
 export default function MarkerPrices({
   markets = [],
-  unit,
+  unit = "",
 }) {
-  const rows = markets.map((market) => {
-    const today = market.today;
+  const rows = markets.map((market, index) => {
+    // API থেকে সরাসরি min ও max নেওয়া হচ্ছে
+    const min = market.min;
+    const max = market.max;
 
-    const min =
-      market.minPrice ??
-      market.minimumPrice ??
-      market.min_price ??
-      today;
-      console.log(min);
-      
-      
-      
-
-    const max =
-      market.maxPrice ??
-      market.maximumPrice ??
-      market.max_price ??
-      today;
-
+    // min ও max থাকলে গড় দাম হিসাব করা হচ্ছে
     const avg =
-      market.averagePrice ??
-      market.avgPrice ??
-      market.average_price ??
-      today;
+      min !== null &&
+      min !== undefined &&
+      max !== null &&
+      max !== undefined
+        ? (Number(min) + Number(max)) / 2
+        : null;
 
     return {
       ...market,
+      id: market.id ?? market.marketId ?? index,
+      name:
+        market.market ??
+        market.marketName ??
+        market.name ??
+        `বাজার ${index + 1}`,
       min,
       max,
       avg,
@@ -99,12 +94,7 @@ export default function MarkerPrices({
             <tbody className="divide-y divide-[#e0e9e0]">
               {rows.map((market, index) => (
                 <tr
-                  key={
-                    market.id ??
-                    market.marketId ??
-                    market.name ??
-                    index
-                  }
+                  key={market.id}
                   className={
                     index % 2 === 0
                       ? "bg-white"
@@ -112,27 +102,25 @@ export default function MarkerPrices({
                   }
                 >
                   <td className="px-4 py-3 font-medium text-gray-800">
-                    {market.name ??
-                      market.market ??
-                      market.marketName ??
-                      market.bazarName ??
-                      `বাজার ${index + 1}`}
+                    {market.name}
                   </td>
 
                   <td className="px-4 py-3 text-gray-600">
-                    {market.division ??
-                      market.area ??
-                      market.location ??
-                      market.city ??
-                      "—"}
+                    {market.division ?? "—"}
                   </td>
 
                   <td className="px-4 py-3 text-right text-green-700">
                     {formatPrice(market.min)} টাকা
+                    <span className="block text-xs text-gray-500">
+                      {unit}
+                    </span>
                   </td>
 
                   <td className="px-4 py-3 text-right text-red-600">
                     {formatPrice(market.max)} টাকা
+                    <span className="block text-xs text-gray-500">
+                      {unit}
+                    </span>
                   </td>
 
                   <td className="px-4 py-3 text-right font-bold text-gray-800">

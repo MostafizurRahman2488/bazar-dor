@@ -131,9 +131,9 @@ function getPriceStats(product, markets) {
       avgFromApi ??
       (marketPrices.length
         ? marketPrices.reduce(
-            (sum, price) => sum + price,
-            0
-          ) / marketPrices.length
+          (sum, price) => sum + price,
+          0
+        ) / marketPrices.length
         : toNumber(product.todayPrice)),
   };
 }
@@ -265,12 +265,7 @@ export default async function ProductDetailsPage({
         <div className="space-y-5 sm:space-y-6">
           <ProductSummary product={product} />
 
-          <PriceSummary
-            min={prices.min}
-            max={prices.max}
-            avg={prices.avg}
-            unit={unit}
-          />
+          <PriceSummary product={product} />
 
           <MarkerPrices
             markets={markets}
