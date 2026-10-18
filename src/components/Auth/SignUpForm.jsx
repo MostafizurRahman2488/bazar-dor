@@ -145,7 +145,7 @@ const SignUpForm = () => {
             setSocialLoading("");
         }
     };
-   
+
 
     const isBusy = loading || Boolean(socialLoading);
 

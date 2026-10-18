@@ -69,10 +69,12 @@ export const auth = betterAuth({
     client,
   }),
 
-  emailAndPassword: {
-    enabled: true,
-    autoSignIn: false,
-  },
+  
+emailAndPassword: {
+  enabled: true,
+  autoSignIn: true,
+},
+
 
   socialProviders: {
     ...(githubClientId && githubClientSecret
