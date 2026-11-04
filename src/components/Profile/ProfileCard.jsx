@@ -2,7 +2,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient, useSession } from "@/lib/auth-client";
 import toast from "react-hot-toast";
@@ -11,16 +11,9 @@ export default function ProfileCard() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
-  const [name, setName] = useState("");
-  const [isUpdating, setIsUpdating] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  useEffect(() => {
-    if (session?.user) {
-      setName(session.user.name || "");
-    }
-  }, [session?.user?.name]);
-
+  // Loading state
   if (isPending) {
     return (
       <div className="space-y-5 animate-pulse">
@@ -30,6 +23,7 @@ export default function ProfileCard() {
     );
   }
 
+  // If user is not logged in
   if (!session?.user) {
     return (
       <section className="rounded-2xl border border-[#e2eae2] bg-white p-6 text-center">
@@ -49,6 +43,7 @@ export default function ProfileCard() {
 
   const user = session.user;
 
+  // Sign Out
   const handleSignOut = async () => {
     setIsSigningOut(true);
 
@@ -61,6 +56,7 @@ export default function ProfileCard() {
       }
 
       toast.success("সফলভাবে সাইন আউট হয়েছে");
+
       router.push("/signin");
       router.refresh();
     } catch {
@@ -70,47 +66,17 @@ export default function ProfileCard() {
     }
   };
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-
-    const trimmedName = name.trim();
-
-    if (!trimmedName) {
-      toast.error("আপনার নাম লিখুন");
-      return;
-    }
-
-    if (trimmedName === (user.name || "")) {
-      toast.error("নামে কোনো পরিবর্তন করা হয়নি");
-      return;
-    }
-
-    setIsUpdating(true);
-
-    try {
-      const { error } = await authClient.updateUser({
-        name: trimmedName,
-      });
-
-      if (error) {
-        toast.error(error.message || "নাম আপডেট করা যায়নি");
-        return;
-      }
-
-      toast.success("আপনার নাম সফলভাবে আপডেট হয়েছে");
-      router.refresh();
-    } catch {
-      toast.error("সমস্যা হয়েছে। আবার চেষ্টা করুন।");
-    } finally {
-      setIsUpdating(false);
-    }
+  // Navigate to Update Profile Page
+  const handleUpdate = () => {
+    router.push("/profile/update");
   };
 
   return (
     <div className="space-y-5">
 
-      {/* Profile Card */}
-      <section className="flex min-h-[112px] items-center gap-3 rounded-2xl border border-[#e1e9e1] bg-[#ffffff] p-4 sm:gap-4 sm:px-6">
+      {/* Profile Information */}
+      <section className="flex min-h-[112px] items-center gap-3 rounded-2xl border border-[#e1e9e1] bg-white p-4 sm:gap-4 sm:px-6">
+
         {/* Profile Image */}
         {user.image ? (
           <Image
@@ -148,44 +114,47 @@ export default function ProfileCard() {
         </button>
       </section>
 
-      {/* Information Card */}
+      {/* Profile Details */}
       <section className="rounded-2xl border border-[#e1e9e1] bg-white p-5 sm:p-6">
-        <h2 className="mb-7 text-base font-bold text-[#303a31]">
-          তথ্য
+
+        <h2 className="mb-5 text-base font-bold text-[#303a31]">
+          আমার তথ্য
         </h2>
 
-        <form onSubmit={handleUpdate}>
-          <div>
-            <label
-              htmlFor="profile-name"
-              className="mb-1.5 block text-sm font-medium text-[#414a42]"
-            >
-              নাম
-            </label>
+        <div className="space-y-4">
 
-            <input
-              id="profile-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="আপনার নাম লিখুন"
-              maxLength={100}
-              required
-              disabled={isUpdating}
-              className="h-[38px] w-full rounded-lg border border-[#dfe7df] bg-white px-3 text-sm text-[#29332b] outline-none transition placeholder:text-gray-400 focus:border-[#07883e] focus:ring-2 focus:ring-green-100 disabled:bg-gray-50"
-            />
+          <div>
+            <p className="text-sm text-[#687169]">
+              নাম
+            </p>
+
+            <p className="mt-1 font-semibold text-[#29332b]">
+              {user.name || "নাম দেওয়া হয়নি"}
+            </p>
           </div>
 
-          <button
-            type="submit"
-            disabled={isUpdating}
-            className="mt-4 flex h-[39px] w-full items-center justify-center rounded-lg bg-[#07883e] text-sm font-bold text-white shadow-[0_3px_0_#b9d9c3] transition hover:bg-[#067735] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isUpdating ? "আপডেট হচ্ছে..." : "আপডেট"}
-          </button>
-        </form>
-      </section>
+          <div>
+            <p className="text-sm text-[#687169]">
+              ইমেইল
+            </p>
 
+            <p className="mt-1 break-all font-semibold text-[#29332b]">
+              {user.email}
+            </p>
+          </div>
+
+        </div>
+
+        {/* Update Button */}
+        <button
+          type="button"
+          onClick={handleUpdate}
+          className="mt-6 flex h-11 w-full items-center justify-center rounded-lg bg-[#07883e] text-sm font-bold text-white shadow-[0_3px_0_#b9d9c3] transition hover:bg-[#067735]"
+        >
+          তথ্য আপডেট করুন
+        </button>
+
+      </section>
     </div>
   );
 }
