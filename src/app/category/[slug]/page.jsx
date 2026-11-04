@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { getProducts } from "@/services/productServices";
 import { getCategories } from "@/services/categoryServices";
@@ -90,13 +91,10 @@ export default async function CategoryDetailPage({ params }) {
   const category = categories.find((item) =>
     getCategoryValues(item).includes(requestedSlug)
   );
-  // Invalid category slug: show a helpful empty state.
+
+  // Invalid category slug
   if (!category) {
-    return (
-      <main className="mx-auto min-h-screen max-w-7xl px-5 py-10">
-        <EmptyCategory title="ক্যাটাগরিটি খুঁজে পাওয়া যায়নি" />
-      </main>
-    );
+    notFound();
   }
 
   const categoryProducts = products.filter((product) =>

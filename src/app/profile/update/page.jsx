@@ -1,17 +1,29 @@
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 
 import UpdateProfileForm from "@/components/Profile/UpdateProfileForm";
 
 export const metadata = {
-    title: "Update Profile | বাজার দর",
+  title: "Update Profile | বাজার দর",
 };
 
-export default function UpdateProfilePage() {
-    return (
-        <main className="min-h-screen bg-base-200 px-4 py-12">
-            <div className="mx-auto max-w-6xl">
-                <UpdateProfileForm />
-            </div>
-        </main>
-    );
-}
+export default async function UpdateProfilePage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
+  if (!session) {
+    redirect(
+      "/signin?reason=auth-required&callbackURL=%2Fprofile%2Fupdate"
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-base-200 px-4 py-12">
+      <div className="mx-auto max-w-6xl">
+        <UpdateProfileForm />
+      </div>
+    </main>
+  );
+}

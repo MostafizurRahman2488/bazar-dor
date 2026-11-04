@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -12,6 +12,30 @@ const SignInForm = () => {
 
     const [loading, setLoading] = useState(false);
     const [socialLoading, setSocialLoading] = useState("");
+    const [redirectTo, setRedirectTo] = useState("/");
+
+    // Handle callback URL and authentication errors
+    useEffect(() => {
+        const params = new URLSearchParams(
+            window.location.search
+        );
+
+        const requestedPath = params.get("callbackURL");
+
+        // Only allow internal paths
+        if (
+            requestedPath?.startsWith("/") &&
+            !requestedPath.startsWith("//")
+        ) {
+            setRedirectTo(requestedPath);
+        }
+
+        if (params.get("reason") === "auth-required") {
+            toast.error("এই পেজটি দেখতে আগে সাইন ইন করুন।");
+        } else if (params.get("error")) {
+            toast.error("সাইন ইন সম্পন্ন হয়নি। আবার চেষ্টা করুন।");
+        }
+    }, []);
 
     // Email and password sign in
     const onSubmit = async (e) => {
@@ -50,11 +74,12 @@ const SignInForm = () => {
             const { data, error } = await authClient.signIn.email({
                 email,
                 password,
-                callbackURL: "/",
+                callbackURL: redirectTo,
             });
 
             if (error) {
                 console.error("Email sign in error:", error);
+
                 toast.error(
                     error.message || "ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।"
                 );
@@ -67,7 +92,8 @@ const SignInForm = () => {
             }
 
             toast.success("সফলভাবে সাইন ইন হয়েছে!");
-            router.replace("/");
+
+            router.replace(redirectTo);
             router.refresh();
 
         } catch (error) {
@@ -80,9 +106,6 @@ const SignInForm = () => {
     };
 
     // Google and GitHub OAuth sign in
-
-
-
     const handleSocialSignIn = async (provider) => {
         if (loading || socialLoading) return;
 
@@ -91,56 +114,49 @@ const SignInForm = () => {
         try {
             const result = await authClient.signIn.social({
                 provider,
-                callbackURL: `${window.location.origin}/`,
-                errorCallbackURL: `${window.location.origin}/signin`,
-                disableRedirect: true,
+
+                callbackURL: `${window.location.origin}${redirectTo}`,
+
+                errorCallbackURL: `${window.location.origin}/signin?error=oauth`,
             });
 
-
-            console.log(`${provider} sign-in response:`, result);
-
             if (result?.error) {
-                console.error("Social login error:", result.error);
+                console.error(
+                    `${provider} sign-in error:`,
+                    result.error
+                );
 
                 toast.error(
                     result.error.message ||
                     `${provider} login ব্যর্থ হয়েছে।`
                 );
+
+                setSocialLoading("");
                 return;
             }
 
-            const authorizationUrl =
-                result?.data?.url || result?.url;
-
-            if (authorizationUrl) {
-                window.location.href = authorizationUrl;
-                return;
-            }
-
-            toast.error(
-                "Login URL পাওয়া যায়নি। Console ও Network পরীক্ষা করুন।"
-            );
-
-            console.error(
-                "No authorization URL in response:",
+            // Better Auth handles OAuth redirection
+            console.log(
+                `${provider} sign-in response:`,
                 result
             );
+
         } catch (error) {
             console.error("Social login exception:", error);
 
             toast.error(
                 error?.message || "Login শুরু করা যায়নি।"
             );
-        } finally {
+
             setSocialLoading("");
         }
     };
-
 
     const isBusy = loading || Boolean(socialLoading);
 
     return (
         <main className="min-h-screen bg-[#f0f5f0] px-4 py-10">
+
             <div className="mx-auto mb-6 text-center">
                 <h1 className="text-2xl font-bold text-[#26352b]">
                     সাইন ইন
@@ -152,11 +168,13 @@ const SignInForm = () => {
             </div>
 
             <div className="mx-auto w-full max-w-sm rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+
                 <form
                     onSubmit={onSubmit}
                     noValidate
                     className="space-y-4"
                 >
+                    {/* Email */}
                     <div>
                         <label
                             htmlFor="signin-email"
@@ -177,6 +195,7 @@ const SignInForm = () => {
                         />
                     </div>
 
+                    {/* Password */}
                     <div>
                         <label
                             htmlFor="signin-password"
@@ -197,6 +216,7 @@ const SignInForm = () => {
                         />
                     </div>
 
+                    {/* Submit */}
                     <button
                         type="submit"
                         disabled={isBusy}
@@ -205,15 +225,20 @@ const SignInForm = () => {
                         {loading ? "সাইন ইন হচ্ছে..." : "সাইন ইন"}
                     </button>
 
+                    {/* Divider */}
                     <div className="flex items-center gap-3 py-1">
                         <div className="h-px flex-1 bg-gray-300" />
+
                         <span className="text-sm text-gray-500">
                             অথবা
                         </span>
+
                         <div className="h-px flex-1 bg-gray-300" />
                     </div>
 
+                    {/* Google and GitHub */}
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+
                         <button
                             type="button"
                             disabled={isBusy}
@@ -235,10 +260,13 @@ const SignInForm = () => {
                                 ? "GitHub-এ সংযোগ হচ্ছে..."
                                 : "GitHub দিয়ে চালিয়ে যান"}
                         </button>
+
                     </div>
 
+                    {/* Signup */}
                     <p className="pt-1 text-center text-sm text-gray-600">
                         অ্যাকাউন্ট নেই?{" "}
+
                         <Link
                             href="/signup"
                             className="font-medium text-green-700 hover:underline"
@@ -246,9 +274,11 @@ const SignInForm = () => {
                             সাইন আপ করুন
                         </Link>
                     </p>
+
                 </form>
             </div>
 
+            {/* Home */}
             <div className="mt-5 text-center">
                 <Link
                     href="/"
@@ -257,9 +287,9 @@ const SignInForm = () => {
                     ← হোম পেজে ফিরে যান
                 </Link>
             </div>
+
         </main>
     );
 };
 
 export default SignInForm;
-

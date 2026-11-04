@@ -131,9 +131,9 @@ function getPriceStats(product, markets) {
       avgFromApi ??
       (marketPrices.length
         ? marketPrices.reduce(
-          (sum, price) => sum + price,
-          0
-        ) / marketPrices.length
+            (sum, price) => sum + price,
+            0
+          ) / marketPrices.length
         : toNumber(product.todayPrice)),
   };
 }
@@ -143,23 +143,16 @@ export default async function ProductDetailsPage({
 }) {
   const { slug } = await params;
 
-  // Protected route: login required
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    redirect(
-      `/signin?callbackURL=${encodeURIComponent(
-        `/product/${slug}`
-      )}`
-    );
-  }
-
+  // 1. Product API থেকে data আনুন
   let products;
 
   try {
     products = await getProducts();
+
+    // API response array না হলে error দেখাবে
+    if (!Array.isArray(products)) {
+      throw new Error("Invalid products API response");
+    }
   } catch (error) {
     console.error("Product API error:", error);
 
@@ -185,6 +178,7 @@ export default async function ProductDetailsPage({
     );
   }
 
+  // 2. URL slug দিয়ে product খুঁজুন
   const product = products.find((item) => {
     const identifiers = [
       item.slug,
@@ -201,10 +195,25 @@ export default async function ProductDetailsPage({
     );
   });
 
+  // 3. Product না থাকলে 404
   if (!product) {
     notFound();
   }
 
+  // 4. Product পাওয়া গেলে login check
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect(
+      `/signin?reason=auth-required&callbackURL=${encodeURIComponent(
+        `/product/${slug}`
+      )}`
+    );
+  }
+
+  // 5. Market ও price data
   const markets = getMarketRows(product);
   const prices = getPriceStats(product, markets);
 
@@ -236,6 +245,7 @@ export default async function ProductDetailsPage({
     product.title ??
     "পণ্যের বিস্তারিত";
 
+  // 6. Product details UI
   return (
     <main className="min-h-screen bg-[#f0f5f0] px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-6xl">
@@ -243,7 +253,10 @@ export default async function ProductDetailsPage({
           aria-label="Breadcrumb"
           className="mb-5 flex flex-wrap items-center gap-2 text-sm text-gray-600"
         >
-          <Link href="/" className="hover:text-green-700">
+          <Link
+            href="/"
+            className="hover:text-green-700"
+          >
             হোম
           </Link>
 

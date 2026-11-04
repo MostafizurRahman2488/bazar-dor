@@ -27,7 +27,16 @@ export default function RootLayout({ children }) {
     >
       <body className="flex min-h-screen flex-col bg-[#F0F5F0]">
         <Navbar />
-        <Toaster position="top-center" />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3500,
+            style: {
+              fontFamily: "inherit",
+              borderRadius: "12px",
+            },
+          }}
+        />
         <main className="flex-1">{children}</main>
         <Footer />
       </body>
