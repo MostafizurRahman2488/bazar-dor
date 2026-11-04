@@ -91,7 +91,7 @@ const SignUpForm = () => {
 
             toast.success("অ্যাকাউন্ট তৈরি হয়েছে!");
 
-            router.replace("/");
+            router.replace("/signin");
             router.refresh();
         } catch (error) {
             console.error("Signup error:", error);
