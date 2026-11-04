@@ -5,6 +5,21 @@ import { useMemo, useState } from "react";
 import ProductGrid from "@/components/Product/ProductGrid";
 import SortDropDown from "./SortDropDown";
 
+// বাংলা এবং ইংরেজি সংখ্যা Number-এ রূপান্তর
+function toNumericPrice(value) {
+  const bengaliDigits = "০১২৩৪৫৬৭৮৯";
+
+  const normalized = String(value ?? "0")
+    .replace(/[০-৯]/g, (digit) =>
+      String(bengaliDigits.indexOf(digit))
+    )
+    .replace(/[^\d.-]/g, "");
+
+  const number = Number(normalized);
+
+  return Number.isFinite(number) ? number : 0;
+}
+
 export default function CategoryProductList({ products = [] }) {
   const [sortBy, setSortBy] = useState("default");
 
@@ -13,11 +28,13 @@ export default function CategoryProductList({ products = [] }) {
 
     if (sortBy === "price-asc") {
       items.sort(
-        (a, b) => Number(a.today ?? 0) - Number(b.today ?? 0)
+        (a, b) =>
+          toNumericPrice(a.today) - toNumericPrice(b.today)
       );
     } else if (sortBy === "price-desc") {
       items.sort(
-        (a, b) => Number(b.today ?? 0) - Number(a.today ?? 0)
+        (a, b) =>
+          toNumericPrice(b.today) - toNumericPrice(a.today)
       );
     }
 
@@ -26,7 +43,6 @@ export default function CategoryProductList({ products = [] }) {
 
   return (
     <section className="space-y-4">
-      {/* Sort Toolbar */}
       <div className="flex min-h-[68px] items-center justify-end rounded-2xl border border-[#e0e9e0] bg-[#fbfdfb] px-4 py-3 sm:px-6">
         <SortDropDown
           value={sortBy}
@@ -34,7 +50,6 @@ export default function CategoryProductList({ products = [] }) {
         />
       </div>
 
-      {/* Product Count */}
       <p className="text-sm text-[#465046]">
         মোট{" "}
         <span className="font-semibold text-[#202820]">
@@ -43,7 +58,6 @@ export default function CategoryProductList({ products = [] }) {
         টি পণ্য দেখানো হচ্ছে
       </p>
 
-      {/* Product Grid */}
       {products.length > 0 ? (
         <ProductGrid products={sortedProducts} />
       ) : (
