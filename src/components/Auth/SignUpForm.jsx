@@ -28,13 +28,35 @@ const SignUpForm = () => {
             .get("confirmPassword")
             ?.toString();
 
+        // Empty field validation
         if (!name || !email || !password || !confirmPassword) {
             toast.error("সবগুলো ফিল্ড পূরণ করুন।");
             return;
         }
 
+        // Name validation
+        if (name.length < 2) {
+            toast.error("নাম কমপক্ষে ২ অক্ষরের হতে হবে।");
+            return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            toast.error("সঠিক ইমেইল ঠিকানা লিখুন।");
+            return;
+        }
+
+        // Password validation
         if (password.length < 8) {
             toast.error("পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।");
+            return;
+        }
+
+        // Confirm password validation
+        if (!confirmPassword) {
+            toast.error("পাসওয়ার্ড নিশ্চিত করুন।");
             return;
         }
 
@@ -44,6 +66,8 @@ const SignUpForm = () => {
         }
 
         setLoading(true);
+
+
 
         try {
             const { data, error } = await authClient.signUp.email({
@@ -162,7 +186,11 @@ const SignUpForm = () => {
             </div>
 
             <div className="mx-auto w-full max-w-md rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-                <form onSubmit={onSubmit} className="space-y-4">
+                <form
+                    onSubmit={onSubmit}
+                    noValidate
+                    className="space-y-4"
+                >
                     <div>
                         <label
                             htmlFor="signup-name"

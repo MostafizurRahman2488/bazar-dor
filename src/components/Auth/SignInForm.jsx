@@ -20,11 +20,27 @@ const SignInForm = () => {
         if (loading || socialLoading) return;
 
         const formData = new FormData(e.currentTarget);
+
         const email = formData.get("email")?.toString().trim();
         const password = formData.get("password")?.toString();
 
+        // Empty field validation
         if (!email || !password) {
             toast.error("ইমেইল ও পাসওয়ার্ড লিখুন।");
+            return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            toast.error("সঠিক ইমেইল ঠিকানা লিখুন।");
+            return;
+        }
+
+        // Password validation
+        if (password.length < 8) {
+            toast.error("পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।");
             return;
         }
 
@@ -53,9 +69,11 @@ const SignInForm = () => {
             toast.success("সফলভাবে সাইন ইন হয়েছে!");
             router.replace("/");
             router.refresh();
+
         } catch (error) {
             console.error("Sign in error:", error);
             toast.error("সাইন ইন করা যায়নি। আবার চেষ্টা করুন।");
+
         } finally {
             setLoading(false);
         }
@@ -77,7 +95,7 @@ const SignInForm = () => {
                 errorCallbackURL: `${window.location.origin}/signin`,
                 disableRedirect: true,
             });
-            
+
 
             console.log(`${provider} sign-in response:`, result);
 
@@ -134,7 +152,11 @@ const SignInForm = () => {
             </div>
 
             <div className="mx-auto w-full max-w-sm rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-                <form onSubmit={onSubmit} className="space-y-4">
+                <form
+                    onSubmit={onSubmit}
+                    noValidate
+                    className="space-y-4"
+                >
                     <div>
                         <label
                             htmlFor="signin-email"
