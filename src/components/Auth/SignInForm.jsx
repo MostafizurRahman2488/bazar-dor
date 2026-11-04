@@ -77,6 +77,7 @@ const SignInForm = () => {
                 errorCallbackURL: `${window.location.origin}/signin`,
                 disableRedirect: true,
             });
+            
 
             console.log(`${provider} sign-in response:`, result);
 
