@@ -39,7 +39,8 @@ const baseURL =
   process.env.BETTER_AUTH_URL ||
   process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
   process.env.NEXT_PUBLIC_APP_URL ||
-  "http://localhost:3000";
+  // "https://bazar-dor-blue-seven.vercel.app";
+  "http://localhost:3000"
 
 const githubClientId =
   process.env.BETTER_AUTH_GITHUB_CLIENT_ID;
@@ -69,11 +70,11 @@ export const auth = betterAuth({
     client,
   }),
 
-  
-emailAndPassword: {
-  enabled: true,
-  autoSignIn: false,
-},
+
+  emailAndPassword: {
+    enabled: true,
+    autoSignIn: false,
+  },
 
 
   socialProviders: {

@@ -117,7 +117,7 @@ const SignInForm = () => {
 
                 callbackURL: `${window.location.origin}${redirectTo}`,
 
-                errorCallbackURL: `${window.location.origin}/signin?error=oauth`,
+                // errorCallbackURL: `${window.location.origin}/signin?error=oauth`,
             });
 
             if (result?.error) {

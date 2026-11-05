@@ -1,11 +1,12 @@
-"use client";
+// "use client";
 
 import { createAuthClient } from "better-auth/react";
 
 const baseURL =
-  process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
-  process.env.NEXT_PUBLIC_APP_URL ||
-  "http://localhost:3000";
+  process.env.BETTER_AUTH_URL ||
+
+  // "https://bazar-dor-blue-seven.vercel.app";
+  "http://localhost:3000"
 
 export const authClient = createAuthClient({
   baseURL,
